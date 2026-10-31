@@ -7644,19 +7644,19 @@ function syncScaleSliderUI() {
     panel.classList.remove("is-active");
     rangeEl.disabled = true;
     rangeEl.value = "0";
-    labelEl.textContent = "Кликните по элементу для масштаба (±20%) или зажмите для сдвига (±10%)";
+    labelEl.textContent = t("scaleDefaultLabel");
     valEl.textContent = "0%";
     return;
   }
 
-  const piv = SUBPART_PIVOTS[selectedSubpartKey] || { label: selectedSubpartKey };
+  const subLabel = getLocalizedSubpartLabel(selectedSubpartKey);
   const cur = (state.partOffsets && state.partOffsets[selectedSubpartKey]) || { dx: 0, dy: 0, scalePct: 0 };
   const pct = Math.max(-20, Math.min(20, Math.round(Number(cur.scalePct) || 0)));
 
   panel.classList.add("is-active");
   rangeEl.disabled = false;
   rangeEl.value = String(pct);
-  labelEl.textContent = `Масштаб: ${piv.label}`;
+  labelEl.textContent = `${t("scalePrefix")} ${subLabel}`;
   valEl.textContent = `${pct > 0 ? "+" : ""}${pct}%`;
 }
 
@@ -7846,7 +7846,7 @@ function syncCloseAllButtons() {
   const allCollapsed = sections.length > 0 && sections.every((sec) => sec.classList.contains("is-collapsed"));
   const btnPanel = document.getElementById("btn-close-all-panel");
   if (btnPanel) {
-    btnPanel.textContent = allCollapsed ? "Развернуть все вкладки" : "Закрыть все вкладки";
+    btnPanel.textContent = allCollapsed ? t("expandAllTabs") : t("closeAllTabs");
   }
 }
 
@@ -7871,11 +7871,11 @@ function syncLockButtons() {
     const locked = Boolean(state.locks[key]);
     if (!locked) allLocked = false;
     btn.classList.toggle("is-locked", locked);
-    btn.textContent = locked ? "🔒 Закреплено" : "🔓 В рандоме";
+    btn.textContent = locked ? t("lockBtnLocked") : t("lockBtnUnlocked");
   });
   const btnLockAll = document.getElementById("btn-lock-all");
   if (btnLockAll) {
-    btnLockAll.textContent = allLocked ? "🔓 Замки: Открыть все" : "🔒 Замки: Закрыть все";
+    btnLockAll.textContent = allLocked ? t("lockAllOpen") : t("lockAllClose");
   }
 }
 
@@ -7948,36 +7948,1384 @@ function syncMeshToggleButtons() {
   });
 }
 
-// Очистка всех подписей от порядковых номеров ("1. ", "2. " и т.д.)
+// Очистка всех подписей от порядковых номеров ("1. ", "2. " и т.д.) и сохранение оригинальной русской подписи в rawLabel
 function stripOptionNumbers() {
   const cleanLabel = (str) => String(str || "").replace(/^\d+\.\s*/, "");
-  BACKGROUNDS.forEach((item) => {
-    item.label = cleanLabel(item.label);
-  });
-  NOISE_MODES.forEach((item) => {
-    item.label = cleanLabel(item.label);
-  });
-  GEO_CUTOUT_MODES.forEach((item) => {
-    item.label = cleanLabel(item.label);
-  });
-  PALETTE_MODES.forEach((item) => {
-    item.label = cleanLabel(item.label);
-  });
-  HAND_ANIM_PRESETS.forEach((item) => {
-    item.label = cleanLabel(item.label);
-  });
-  HEAD_ANIM_PRESETS.forEach((item) => {
-    item.label = cleanLabel(item.label);
-  });
+  const storeClean = (item) => {
+    const cl = cleanLabel(item.label);
+    item.rawLabel = item.rawLabel || cl;
+    item.label = cl;
+  };
+  BACKGROUNDS.forEach(storeClean);
+  NOISE_MODES.forEach(storeClean);
+  GEO_CUTOUT_MODES.forEach(storeClean);
+  PALETTE_MODES.forEach(storeClean);
+  HAND_ANIM_PRESETS.forEach(storeClean);
+  HEAD_ANIM_PRESETS.forEach(storeClean);
   Object.values(OPTIONS).forEach((list) => {
     if (Array.isArray(list)) {
-      list.forEach((item) => {
-        item.label = cleanLabel(item.label);
-      });
+      list.forEach(storeClean);
     }
   });
 }
 stripOptionNumbers();
+
+// Текущий язык интерфейса (по умолчанию английский: "en")
+let currentLang = "en";
+
+// Полный словарь локализации интерфейса на 6 языков: английский (en), испанский (es), немецкий (de), китайский (zh), французский (fr), русский (ru)
+const UI_I18N = {
+  en: {
+    pageTitle: "Argonyata Generator — Japanese Minimalism",
+    brandTitle: "Argonyata Generator",
+    brandSubtitle: "Vector avatar builder from geometric primitives",
+    btnRandom: "🎲 Random Seed",
+    btnRandomTitle: "Generate a new random seed",
+    btnExportSvg: "Download SVG",
+    btnExportPng: "Download PNG",
+    btnExportGif: "Download GIF 512×512",
+    stageHint: "Click an element to move or scale (±20%) • Hold an element to drag slightly (±10%)",
+    supportText: "Liked the generator?<br>Please support us!",
+    supportBtn: "💖 Support",
+    supportBtnTitle: "Open support page",
+    scaleDefaultLabel: "Click an element to scale (±20%) or hold to move (±10%)",
+    scalePrefix: "Scale:",
+    btnResetOffsets: "Reset Edits",
+    btnResetOffsetsTitle: "Reset all manual shifts and element scaling",
+    btnAllGrain: "Grain: On/Off All",
+    secAnim: "Animation",
+    chkAnimEnabled: "Enable animation",
+    chkAnimNoise: "Moving noise",
+    chkAnimParticles: "Floating particles (±5%)",
+    chkAnimBlink: "Eye blinking",
+    chkAnimEars: "Moving ears",
+    chkAnimHead: "Head tilt (±7°)",
+    chkAnimGlare: "45° Glare",
+    chkAnimHands: "Moving hands (5%)",
+    subGlareTargets: "45° Glare on specific elements (on/off):",
+    glareGlasses: "✨ Glasses",
+    glareEarrings: "✨ Earrings",
+    glareHorns: "✨ Horns",
+    glareHat: "✨ Hat",
+    glareCloth: "✨ Outfit",
+    glareParticles: "✨ Particles",
+    subHeadAnim: "Head sway presets (±7° from 0° north, 8):",
+    subHandAnim: "Hand motion presets (10):",
+    seedLabel: "Seed:",
+    seedPlaceholder: "Enter seed...",
+    btnNewSeed: "🎲 Random",
+    btnNewSeedTitle: "Generate random variant",
+    btnPrevSeed: "← Back",
+    btnPrevSeedTitle: "Restore previous seed",
+    btnApplySeed: "Apply",
+    btnApplySeedTitle: "Generate avatar from seed",
+    btnCopySeed: "Copy",
+    btnCopySeedTitle: "Copy current seed",
+    copiedText: "Copied!",
+    btnCloseAllTitle: "Collapse or expand all constructor tabs",
+    closeAllTabs: "Close all tabs",
+    expandAllTabs: "Expand all tabs",
+    btnColorLockAllTitle: "Lock or unlock all colors",
+    colorLockAll: "🎨 Lock colors: All",
+    colorUnlockAll: "🎨 Unlock colors: All",
+    btnLockAllTitle: "Lock or unlock all categories from random",
+    lockAllClose: "🔒 Locks: Lock all",
+    lockAllOpen: "🔓 Locks: Unlock all",
+    lockBtnUnlocked: "🔓 Random",
+    lockBtnLocked: "🔒 Locked",
+    secColorModes: "Color Modes (Contrast & 3 Colors)",
+    chkContrastTitle: "Upper element contrast policy: prevents overlapping layers from sharing conflicting colors",
+    chkContrast: "Contrast",
+    chkThreeColorsTitle: "Use only 3 harmonious colors for all elements and background",
+    chkThreeColors: "Three Colors",
+    secPalette: "Color Palettes (20)",
+    secGradient: "Mesh Gradient by Body Parts",
+    chkGradientTitle: "Enable or disable mesh gradient",
+    chkGradient: "Gradient",
+    btnAllMesh: "On/Off All",
+    btnAllMeshTitle: "Toggle gradient on all body parts",
+    btnRerollMesh: "Random Gradient",
+    btnRerollMeshTitle: "Randomize gradient nodes and parts",
+    layerBg: "Background",
+    layerSkin: "Face",
+    layerEars: "Ears",
+    layerEarrings: "Earrings",
+    layerBody: "Body",
+    layerCloth: "Outfit",
+    layerHands: "Hands",
+    layerHairShort: "Hair: Short",
+    layerHairBack: "Hair: Back",
+    layerHairBangs: "Bangs",
+    layerHairTop: "Crown",
+    layerFacialHair: "Beard/Mustache",
+    layerHorns: "Horns",
+    layerHat: "Hat",
+    layerHatGlasses: "Hat/Glasses",
+    layerParticles: "Particles",
+    layerEyes: "Eyes",
+    layerNose: "Nose",
+    layerMouth: "Mouth",
+    layerAcc: "Accessories",
+    layerGlasses: "Glasses",
+    secNoise: "Vivid Noise Grain (4) & Geo-Cutouts (16)",
+    btnRerollNoise: "Randomize Noise by Parts",
+    secBg: "Background & Gradient Aura (22)",
+    secFace: "Face Shape & Chubby Cheeks (22)",
+    btnFaceBoostTitle: "Boost upper head height to close gaps under hair or hats",
+    btnFaceBoostPrefix: "Boost top:",
+    lblFaceBoost: "Boost upper head (close gaps):",
+    secEars: "Ear Shapes (16)",
+    secEarrings: "Earrings (15)",
+    secEyes: "Eye Geometry (61)",
+    secNose: "Minimalist Nose (15)",
+    secMouth: "Mouth Geometry & Emotion (15)",
+    secFacialHair: "Beards & Mustaches (30)",
+    secHairShort: "Hairstyle: Short (50)",
+    btnSyncHair: "Sync hair color",
+    secHairBack: "Hairstyle: Back Silhouette (50)",
+    secHairBangs: "Hairstyle: Bangs (50)",
+    secHairTop: "Hairstyle: Top / Crown (50)",
+    secBodyShape: "Body Silhouette (65)",
+    secClothDetail: "Clothing Details (50)",
+    secHands: "Floating Hands (30)",
+    chkHandsEnabled: "Enable hands",
+    btnSyncHands: "Match skin color",
+    btnRerollHands: "Random offset",
+    subHandLeft: "Left Hand (30)",
+    subHandRight: "Right Hand (30, mirrored)",
+    secGlasses: "Glasses & Monocles (19)",
+    secHorns: "Horns & Antennas (15)",
+    secHat: "Headwear & Adaptive Headphones (54)",
+    secAcc: "Face Accessories & Mask (15)",
+    secParticles: "Particles & Surrounding Aura (50)",
+    btnScrollTopTitle: "Scroll to top",
+    modalSupportBtn: "💖 Support the Author",
+    customColorLabel: "Custom:",
+    customColorAria: "Custom element color",
+    lockColorLabel: "Lock color",
+    lockColorTitle: "Lock only this element's color (shape still changes on random)",
+    glarePillLabel: "✨ Glare",
+    glarePillTitle: "Toggle 45° diagonal glare for this element",
+    dlDownloadingFmt: "Downloading",
+    dlBuildingGif: "Building GIF 512×512",
+    dlTitleGif: "Your GIF is being generated!",
+    dlTitleSvg: "Please support us! 💖",
+    dlSubGif: "While the animation is being built, please support our project if you enjoyed Argonyata Generator! 💖",
+    dlSubSvg: "While your file is being prepared, please support our project if you enjoyed Argonyata Generator! 💖",
+    dlAutoStart: "Automatic download starts in:",
+    dlBuildingFrames: "Building frames",
+    dlReadyDownloading: "Animation ready, downloading:",
+    dlPackingGif: "Packing GIF animation...",
+    dlSecUnit: "s",
+    dlLoading: "Downloading...",
+    dlFrameWord: "Frame",
+    dlBtnPacking: "Packing GIF...",
+    noneLabel: "None"
+  },
+  es: {
+    pageTitle: "Generador Argonyata — Minimalismo Japonés",
+    brandTitle: "Generador Argonyata",
+    brandSubtitle: "Constructor vectorial de avatares con primitivas geométricas",
+    btnRandom: "🎲 Semilla aleatoria",
+    btnRandomTitle: "Generar una nueva semilla aleatoria",
+    btnExportSvg: "Descargar SVG",
+    btnExportPng: "Descargar PNG",
+    btnExportGif: "Descargar GIF 512×512",
+    stageHint: "Haz clic en un elemento para mover o escalar (±20%) • Mantén pulsado para desplazar (±10%)",
+    supportText: "¿Te gustó el generador?<br>¡Por favor, apóyanos!",
+    supportBtn: "💖 Apoyar",
+    supportBtnTitle: "Abrir página de apoyo",
+    scaleDefaultLabel: "Haz clic en un elemento para escalar (±20%) o mantén para mover (±10%)",
+    scalePrefix: "Escala:",
+    btnResetOffsets: "Restablecer ajustes",
+    btnResetOffsetsTitle: "Restablecer todos los desplazamientos y escalas manuales",
+    btnAllGrain: "Grano: Act./Desact. todo",
+    secAnim: "Animación",
+    chkAnimEnabled: "Activar animación",
+    chkAnimNoise: "Ruido en movimiento",
+    chkAnimParticles: "Partículas flotantes (±5%)",
+    chkAnimBlink: "Parpadeo de ojos",
+    chkAnimEars: "Orejas en movimiento",
+    chkAnimHead: "Inclinación de cabeza (±7°)",
+    chkAnimGlare: "Destello 45°",
+    chkAnimHands: "Manos en movimiento (5%)",
+    subGlareTargets: "Destello 45° en elementos específicos (act./desact.):",
+    glareGlasses: "✨ Gafas",
+    glareEarrings: "✨ Pendientes",
+    glareHorns: "✨ Cuernos",
+    glareHat: "✨ Gorro",
+    glareCloth: "✨ Ropa",
+    glareParticles: "✨ Partículas",
+    subHeadAnim: "Ajustes de balanceo de cabeza (±7°, 8):",
+    subHandAnim: "Ajustes de movimiento de manos (10):",
+    seedLabel: "Semilla:",
+    seedPlaceholder: "Introduce semilla...",
+    btnNewSeed: "🎲 Aleatorio",
+    btnNewSeedTitle: "Generar variante aleatoria",
+    btnPrevSeed: "← Atrás",
+    btnPrevSeedTitle: "Restaurar semilla anterior",
+    btnApplySeed: "Aplicar",
+    btnApplySeedTitle: "Generar avatar según la semilla",
+    btnCopySeed: "Copiar",
+    btnCopySeedTitle: "Copiar semilla actual",
+    copiedText: "¡Copiado!",
+    btnCloseAllTitle: "Contraer o expandir todas las pestañas",
+    closeAllTabs: "Cerrar pestañas",
+    expandAllTabs: "Expandir pestañas",
+    btnColorLockAllTitle: "Fijar o desbloquear todos los colores",
+    colorLockAll: "🎨 Fijar color: Todos",
+    colorUnlockAll: "🎨 Soltar color: Todos",
+    btnLockAllTitle: "Cerrar o abrir todos los candados del aleatorio",
+    lockAllClose: "🔒 Candados: Cerrar todos",
+    lockAllOpen: "🔓 Candados: Abrir todos",
+    lockBtnUnlocked: "🔓 Aleatorio",
+    lockBtnLocked: "🔒 Fijado",
+    secColorModes: "Modos de color (Contraste y 3 colores)",
+    chkContrastTitle: "Política de contraste superior: evita colores conflictivos entre capas superpuestas",
+    chkContrast: "Contraste",
+    chkThreeColorsTitle: "Usar solo 3 colores para todos los elementos y el fondo",
+    chkThreeColors: "Tres colores",
+    secPalette: "Paletas de colores (20)",
+    secGradient: "Gradiente de malla por partes (Mesh Gradient)",
+    chkGradientTitle: "Activar o desactivar gradiente de malla",
+    chkGradient: "Gradiente",
+    btnAllMesh: "Act./Desact. todo",
+    btnAllMeshTitle: "Alternar gradiente en todas las partes",
+    btnRerollMesh: "Gradiente aleatorio",
+    btnRerollMeshTitle: "Generar nodos de gradiente aleatorios",
+    layerBg: "Fondo",
+    layerSkin: "Rostro",
+    layerEars: "Orejas",
+    layerEarrings: "Pendientes",
+    layerBody: "Cuerpo",
+    layerCloth: "Ropa",
+    layerHands: "Manos",
+    layerHairShort: "Pelo: Corto",
+    layerHairBack: "Pelo: Atrás",
+    layerHairBangs: "Flequillo",
+    layerHairTop: "Coronilla",
+    layerFacialHair: "Barba/Bigote",
+    layerHorns: "Cuernos",
+    layerHat: "Gorro",
+    layerHatGlasses: "Gorro/Gafas",
+    layerParticles: "Partículas",
+    layerEyes: "Ojos",
+    layerNose: "Nariz",
+    layerMouth: "Boca",
+    layerAcc: "Accesorios",
+    layerGlasses: "Gafas",
+    secNoise: "Grano de ruido (4) y recorte geométrico (16)",
+    btnRerollNoise: "Ruido aleatorio por partes",
+    secBg: "Fondo y aura de gradiente (22)",
+    secFace: "Óvalo facial y mejillas (22)",
+    btnFaceBoostTitle: "Aumentar la parte superior de la cabeza para cubrir huecos",
+    btnFaceBoostPrefix: "Subir sup.:",
+    lblFaceBoost: "Aumentar parte superior de la cabeza:",
+    secEars: "Forma de orejas (16)",
+    secEarrings: "Pendientes (15)",
+    secEyes: "Geometría de ojos (61)",
+    secNose: "Nariz minimalista (15)",
+    secMouth: "Geometría de boca y emoción (15)",
+    secFacialHair: "Barbas y bigotes (30)",
+    secHairShort: "Peinado: Corto (50)",
+    btnSyncHair: "Sincr. color de pelo",
+    secHairBack: "Peinado: Silueta trasera (50)",
+    secHairBangs: "Peinado: Flequillo (50)",
+    secHairTop: "Peinado: Parte superior (50)",
+    secBodyShape: "Silueta del cuerpo (65)",
+    secClothDetail: "Detalles de ropa (50)",
+    secHands: "Manos flotantes (30)",
+    chkHandsEnabled: "Activar manos",
+    btnSyncHands: "Color de piel",
+    btnRerollHands: "Desplaz. aleatorio",
+    subHandLeft: "Mano izquierda (30)",
+    subHandRight: "Mano derecha (30, espejo)",
+    secGlasses: "Gafas y monóculos (19)",
+    secHorns: "Cuernos y antenas (15)",
+    secHat: "Sombreros y auriculares (54)",
+    secAcc: "Accesorios faciales y máscara (15)",
+    secParticles: "Partículas y aura (50)",
+    btnScrollTopTitle: "Subir arriba",
+    modalSupportBtn: "💖 Apoyar al autor",
+    customColorLabel: "Propio:",
+    customColorAria: "Color personalizado",
+    lockColorLabel: "Fijar color",
+    lockColorTitle: "Fijar solo el color de este elemento",
+    glarePillLabel: "✨ Destello",
+    glarePillTitle: "Activar o desactivar destello 45° en este elemento",
+    dlDownloadingFmt: "Descargando",
+    dlBuildingGif: "Creando GIF 512×512",
+    dlTitleGif: "¡Tu GIF se está generando!",
+    dlTitleSvg: "¡Apóyanos por favor! 💖",
+    dlSubGif: "Mientras se genera la animación, ¡por favor apoya nuestro proyecto si te gustó! 💖",
+    dlSubSvg: "Mientras se prepara el archivo, ¡por favor apoya nuestro proyecto si te gustó! 💖",
+    dlAutoStart: "La descarga automática comenzará en:",
+    dlBuildingFrames: "Creando fotogramas",
+    dlReadyDownloading: "Animación lista, descargando:",
+    dlPackingGif: "Empaquetando animación GIF...",
+    dlSecUnit: " s",
+    dlLoading: "Descargando...",
+    dlFrameWord: "Fotograma",
+    dlBtnPacking: "Empaquetando GIF...",
+    noneLabel: "Ninguno"
+  },
+  de: {
+    pageTitle: "Argonyata Generator — Japanischer Minimalismus",
+    brandTitle: "Argonyata Generator",
+    brandSubtitle: "Vektor-Avatar-Baukasten aus geometrischen Primitiven",
+    btnRandom: "🎲 Zufalls-Seed",
+    btnRandomTitle: "Neuen zufälligen Seed generieren",
+    btnExportSvg: "SVG herunterladen",
+    btnExportPng: "PNG herunterladen",
+    btnExportGif: "GIF 512×512 herunterladen",
+    stageHint: "Element anklicken zum Skalieren (±20%) • Gedrückt halten zum Verschieben (±10%)",
+    supportText: "Gefällt dir der Generator?<br>Bitte unterstütze uns!",
+    supportBtn: "💖 Unterstützen",
+    supportBtnTitle: "Unterstützungsseite öffnen",
+    scaleDefaultLabel: "Element anklicken zum Skalieren (±20%) oder halten zum Verschieben (±10%)",
+    scalePrefix: "Skalierung:",
+    btnResetOffsets: "Änderungen zurücksetzen",
+    btnResetOffsetsTitle: "Alle manuellen Verschiebungen und Skalierungen zurücksetzen",
+    btnAllGrain: "Körnung: Alle An/Aus",
+    secAnim: "Animation",
+    chkAnimEnabled: "Animation aktivieren",
+    chkAnimNoise: "Bewegtes Rauschen",
+    chkAnimParticles: "Schwebende Partikel (±5%)",
+    chkAnimBlink: "Augenblinzeln",
+    chkAnimEars: "Ohren wackeln",
+    chkAnimHead: "Kopfneigung (±7°)",
+    chkAnimGlare: "45°-Glanz",
+    chkAnimHands: "Hände bewegen (5%)",
+    subGlareTargets: "45°-Glanz auf bestimmten Elementen (an/aus):",
+    glareGlasses: "✨ Brille",
+    glareEarrings: "✨ Ohrringe",
+    glareHorns: "✨ Hörner",
+    glareHat: "✨ Kopfbedeckung",
+    glareCloth: "✨ Kleidung",
+    glareParticles: "✨ Partikel",
+    subHeadAnim: "Kopfneigungs-Presets (±7°, 8):",
+    subHandAnim: "Handbewegungs-Presets (10):",
+    seedLabel: "Seed:",
+    seedPlaceholder: "Seed eingeben...",
+    btnNewSeed: "🎲 Zufall",
+    btnNewSeedTitle: "Zufällige Variante generieren",
+    btnPrevSeed: "← Zurück",
+    btnPrevSeedTitle: "Vorherigen Seed wiederherstellen",
+    btnApplySeed: "Anwenden",
+    btnApplySeedTitle: "Avatar nach Seed generieren",
+    btnCopySeed: "Kopieren",
+    btnCopySeedTitle: "Aktuellen Seed kopieren",
+    copiedText: "Kopiert!",
+    btnCloseAllTitle: "Alle Konstruktor-Tabs ein- oder ausklappen",
+    closeAllTabs: "Alle Tabs schließen",
+    expandAllTabs: "Alle Tabs öffnen",
+    btnColorLockAllTitle: "Alle Farben sperren oder entsperren",
+    colorLockAll: "🎨 Farbsperre: Alle",
+    colorUnlockAll: "🎨 Farbsperre: Lösen",
+    btnLockAllTitle: "Alle Kategorien für Zufall sperren oder entsperren",
+    lockAllClose: "🔒 Sperren: Alle schließen",
+    lockAllOpen: "🔓 Sperren: Alle öffnen",
+    lockBtnUnlocked: "🔓 Zufall",
+    lockBtnLocked: "🔒 Gesperrt",
+    secColorModes: "Farbmodi (Kontrast & 3 Farben)",
+    chkContrastTitle: "Oberflächen-Kontrastregel: verhindert Farbkonflikte zwischen Ebenen",
+    chkContrast: "Kontrast",
+    chkThreeColorsTitle: "Nur 3 harmonische Farben für alle Elemente und Hintergrund verwenden",
+    chkThreeColors: "Drei Farben",
+    secPalette: "Farbpaletten (20)",
+    secGradient: "Mesh-Verlauf nach Körperteilen",
+    chkGradientTitle: "Mesh-Verlauf aktivieren oder deaktivieren",
+    chkGradient: "Verlauf",
+    btnAllMesh: "Alle An/Aus",
+    btnAllMeshTitle: "Verlauf für alle Teile umschalten",
+    btnRerollMesh: "Zufalls-Verlauf",
+    btnRerollMeshTitle: "Zufällige Verlaufsknoten generieren",
+    layerBg: "Hintergrund",
+    layerSkin: "Gesicht",
+    layerEars: "Ohren",
+    layerEarrings: "Ohrringe",
+    layerBody: "Körper",
+    layerCloth: "Kleidung",
+    layerHands: "Hände",
+    layerHairShort: "Haare: Kurz",
+    layerHairBack: "Haare: Hinten",
+    layerHairBangs: "Pony",
+    layerHairTop: "Oberkopf",
+    layerFacialHair: "Bart/Schnurrbart",
+    layerHorns: "Hörner",
+    layerHat: "Hut",
+    layerHatGlasses: "Hut/Brille",
+    layerParticles: "Partikel",
+    layerEyes: "Augen",
+    layerNose: "Nase",
+    layerMouth: "Mund",
+    layerAcc: "Accessoires",
+    layerGlasses: "Brille",
+    secNoise: "Körnung (4) & Geo-Ausschnitte (16)",
+    btnRerollNoise: "Zufalls-Rauschen pro Teil",
+    secBg: "Hintergrund & Verlauf-Aura (22)",
+    secFace: "Gesichtsform & Pausbacken (22)",
+    btnFaceBoostTitle: "Oberkopf vergrößern, um Lücken unter Haaren oder Hüten zu schließen",
+    btnFaceBoostPrefix: "Oberkopf:",
+    lblFaceBoost: "Oberkopf vergrößern (Lücken schließen):",
+    secEars: "Ohrformen (16)",
+    secEarrings: "Ohrringe (15)",
+    secEyes: "Augen-Geometrie (61)",
+    secNose: "Minimalistische Nase (15)",
+    secMouth: "Mund-Geometrie & Emotion (15)",
+    secFacialHair: "Bärte & Schnurrbärte (30)",
+    secHairShort: "Frisur: Kurz (50)",
+    btnSyncHair: "Haarfarbe synchr.",
+    secHairBack: "Frisur: Hinterkopf (50)",
+    secHairBangs: "Frisur: Pony (50)",
+    secHairTop: "Frisur: Oberkopf (50)",
+    secBodyShape: "Körpersilhouette (65)",
+    secClothDetail: "Kleidungsdetails (50)",
+    secHands: "Schwebende Hände (30)",
+    chkHandsEnabled: "Hände aktivieren",
+    btnSyncHands: "Hautfarbe übernehmen",
+    btnRerollHands: "Zufalls-Versatz",
+    subHandLeft: "Linke Hand (30)",
+    subHandRight: "Rechte Hand (30, gespiegelt)",
+    secGlasses: "Brillen & Monokel (19)",
+    secHorns: "Hörner & Antennen (15)",
+    secHat: "Kopfbedeckung & Kopfhörer (54)",
+    secAcc: "Gesichts-Accessoires & Maske (15)",
+    secParticles: "Partikel & Aura (50)",
+    btnScrollTopTitle: "Nach oben scrollen",
+    modalSupportBtn: "💖 Autor unterstützen",
+    customColorLabel: "Eigene:",
+    customColorAria: "Benutzerdefinierte Farbe",
+    lockColorLabel: "Farbe фиксир.".replace("фиксир.", "sperren"),
+    lockColorTitle: "Nur die Farbe dieses Elements sperren",
+    glarePillLabel: "✨ Glanz",
+    glarePillTitle: "45°-Glanz für dieses Element umschalten",
+    dlDownloadingFmt: "Download",
+    dlBuildingGif: "GIF 512×512 wird erstellt",
+    dlTitleGif: "Dein GIF wird erstellt!",
+    dlTitleSvg: "Bitte unterstütze uns! 💖",
+    dlSubGif: "Während die Animation erstellt wird, unterstütze bitte unser Projekt, wenn es dir gefällt! 💖",
+    dlSubSvg: "Während die Datei vorbereitet wird, unterstütze bitte unser Projekt, wenn es dir gefällt! 💖",
+    dlAutoStart: "Automatischer Download startet in:",
+    dlBuildingFrames: "Frames werden erstellt",
+    dlReadyDownloading: "Animation bereit, Download:",
+    dlPackingGif: "GIF-Animation wird gepackt...",
+    dlSecUnit: " Sek.",
+    dlLoading: "Download...",
+    dlFrameWord: "Frame",
+    dlBtnPacking: "GIF packen...",
+    noneLabel: "Keine"
+  },
+  zh: {
+    pageTitle: "Argonyata 生成器 — 日式极简风",
+    brandTitle: "Argonyata 生成器",
+    brandSubtitle: "基于几何图元的矢量头像构建器",
+    btnRandom: "🎲 随机种子",
+    btnRandomTitle: "生成新的随机种子",
+    btnExportSvg: "下载 SVG",
+    btnExportPng: "下载 PNG",
+    btnExportGif: "下载 GIF 512×512",
+    stageHint: "点击元素可移动或缩放 (±20%) • 长按元素可微调拖动 (±10%)",
+    supportText: "喜欢这个生成器吗？<br>请支持我们！",
+    supportBtn: "💖 支持我们",
+    supportBtnTitle: "打开支持页面",
+    scaleDefaultLabel: "点击元素进行缩放 (±20%) 或长按拖动 (±10%)",
+    scalePrefix: "缩放:",
+    btnResetOffsets: "重置修改",
+    btnResetOffsetsTitle: "重置所有手动位移与缩放",
+    btnAllGrain: "颗粒: 全部开/关",
+    secAnim: "动画设置",
+    chkAnimEnabled: "启用动画",
+    chkAnimNoise: "动态噪点",
+    chkAnimParticles: "粒子漂浮 (±5%)",
+    chkAnimBlink: "眨眼动画",
+    chkAnimEars: "耳朵微动",
+    chkAnimHead: "头部摆动 (±7°)",
+    chkAnimGlare: "45° 流光",
+    chkAnimHands: "双手浮动 (5%)",
+    subGlareTargets: "指定元素的 45° 流光 (开/关):",
+    glareGlasses: "✨ 眼镜",
+    glareEarrings: "✨ 耳环",
+    glareHorns: "✨ 角/天线",
+    glareHat: "✨ 帽子",
+    glareCloth: "✨ 服饰",
+    glareParticles: "✨ 粒子",
+    subHeadAnim: "头部摆动预设 (±7°, 8种):",
+    subHandAnim: "手部动作预设 (10种):",
+    seedLabel: "种子:",
+    seedPlaceholder: "输入种子...",
+    btnNewSeed: "🎲 随机生成",
+    btnNewSeedTitle: "生成随机形象",
+    btnPrevSeed: "← 返回",
+    btnPrevSeedTitle: "恢复上一个种子",
+    btnApplySeed: "应用",
+    btnApplySeedTitle: "根据种子生成形象",
+    btnCopySeed: "复制",
+    btnCopySeedTitle: "复制当前种子",
+    copiedText: "已复制！",
+    btnCloseAllTitle: "折叠或展开所有面板",
+    closeAllTabs: "折叠全部面板",
+    expandAllTabs: "展开全部面板",
+    btnColorLockAllTitle: "锁定或解锁所有颜色",
+    colorLockAll: "🎨 锁定颜色: 全部",
+    colorUnlockAll: "🎨 解锁颜色: 全部",
+    btnLockAllTitle: "锁定或解锁所有随机分类",
+    lockAllClose: "🔒 锁定: 全部关闭",
+    lockAllOpen: "🔓 锁定: 全部打开",
+    lockBtnUnlocked: "🔓 随机",
+    lockBtnLocked: "🔒 已锁定",
+    secColorModes: "色彩模式 (对比度 & 三色模式)",
+    chkContrastTitle: "上层元素对比策略：防止重叠图层颜色冲突",
+    chkContrast: "高对比度",
+    chkThreeColorsTitle: "全身与背景仅使用 3 种和谐色彩",
+    chkThreeColors: "三色模式",
+    secPalette: "色彩调色板 (20)",
+    secGradient: "身体部位网格渐变 (Mesh Gradient)",
+    chkGradientTitle: "启用或禁用网格渐变",
+    chkGradient: "渐变",
+    btnAllMesh: "全部开/关",
+    btnAllMeshTitle: "切换所有部位的渐变",
+    btnRerollMesh: "随机渐变",
+    btnRerollMeshTitle: "随机生成各部位渐变节点",
+    layerBg: "背景",
+    layerSkin: "脸部",
+    layerEars: "耳朵",
+    layerEarrings: "耳环",
+    layerBody: "身体",
+    layerCloth: "服饰",
+    layerHands: "双手",
+    layerHairShort: "短发",
+    layerHairBack: "后发",
+    layerHairBangs: "刘海",
+    layerHairTop: "头顶发",
+    layerFacialHair: "胡须",
+    layerHorns: "角/天线",
+    layerHat: "帽子",
+    layerHatGlasses: "帽子/眼镜",
+    layerParticles: "粒子",
+    layerEyes: "眼睛",
+    layerNose: "鼻子",
+    layerMouth: "嘴巴",
+    layerAcc: "面部饰品",
+    layerGlasses: "眼镜",
+    secNoise: "鲜明噪点颗粒 (4) & 几何镂空 (16)",
+    btnRerollNoise: "按部位随机噪点",
+    secBg: "背景与渐变光环 (22)",
+    secFace: "脸型与圆润脸颊 (22)",
+    btnFaceBoostTitle: "加高头顶以填补头发或帽子下的空隙",
+    btnFaceBoostPrefix: "头顶加高:",
+    lblFaceBoost: "加高头顶 (填补空隙):",
+    secEars: "耳朵形状 (16)",
+    secEarrings: "耳环 (15)",
+    secEyes: "眼睛几何 (61)",
+    secNose: "极简鼻子 (15)",
+    secMouth: "嘴巴几何与表情 (15)",
+    secFacialHair: "胡须与八字胡 (30)",
+    secHairShort: "发型: 短发 (50)",
+    btnSyncHair: "同步发色",
+    secHairBack: "发型: 后发轮廓 (50)",
+    secHairBangs: "发型: 刘海 (50)",
+    secHairTop: "发型: 头顶 (50)",
+    secBodyShape: "身体轮廓 (65)",
+    secClothDetail: "服装细节 (50)",
+    secHands: "悬浮双手 (30)",
+    chkHandsEnabled: "显示双手",
+    btnSyncHands: "同步肤色",
+    btnRerollHands: "随机偏移",
+    subHandLeft: "左手姿势 (30)",
+    subHandRight: "右手姿势 (30, 镜像)",
+    secGlasses: "眼镜与单片镜 (19)",
+    secHorns: "角与天线 (15)",
+    secHat: "头饰与自适应耳机 (54)",
+    secAcc: "面部配饰与口罩 (15)",
+    secParticles: "周围粒子与光环 (50)",
+    btnScrollTopTitle: "回到顶部",
+    modalSupportBtn: "💖 支持作者",
+    customColorLabel: "自选:",
+    customColorAria: "自定义颜色",
+    lockColorLabel: "锁定颜色",
+    lockColorTitle: "仅锁定该元素颜色（形状仍参与随机）",
+    glarePillLabel: "✨ 流光",
+    glarePillTitle: "开关此元素的 45° 斜向流光",
+    dlDownloadingFmt: "正在下载",
+    dlBuildingGif: "正在生成 GIF 512×512",
+    dlTitleGif: "您的 GIF 正在生成中！",
+    dlTitleSvg: "请支持我们！💖",
+    dlSubGif: "在合成动画的同时，如果您喜欢 Argonyata 生成器，请支持我们的项目！💖",
+    dlSubSvg: "在准备文件的同时，如果您喜欢 Argonyata 生成器，请支持我们的项目！💖",
+    dlAutoStart: "自动下载将在以下时间开始:",
+    dlBuildingFrames: "正在渲染帧",
+    dlReadyDownloading: "动画已就绪，正在下载:",
+    dlPackingGif: "正在打包 GIF 动画...",
+    dlSecUnit: " 秒",
+    dlLoading: "正在下载...",
+    dlFrameWord: "帧",
+    dlBtnPacking: "正在打包 GIF...",
+    noneLabel: "无"
+  },
+  fr: {
+    pageTitle: "Générateur Argonyata — Minimalisme Japonais",
+    brandTitle: "Générateur Argonyata",
+    brandSubtitle: "Constructeur d'avatars vectoriels à partir de primitives géométriques",
+    btnRandom: "🎲 Graine aléatoire",
+    btnRandomTitle: "Générer une nouvelle graine aléatoire",
+    btnExportSvg: "Télécharger SVG",
+    btnExportPng: "Télécharger PNG",
+    btnExportGif: "Télécharger GIF 512×512",
+    stageHint: "Cliquez sur un élément pour agrandir (±20%) • Maintenez pour déplacer (±10%)",
+    supportText: "Vous aimez le générateur ?<br>Soutenez-nous s'il vous plaît !",
+    supportBtn: "💖 Soutenir",
+    supportBtnTitle: "Ouvrir la page de soutien",
+    scaleDefaultLabel: "Cliquez sur un élément pour l'échelle (±20%) ou maintenez pour déplacer (±10%)",
+    scalePrefix: "Échelle :",
+    btnResetOffsets: "Réinitialiser",
+    btnResetOffsetsTitle: "Réinitialiser tous les déplacements et échelles manuels",
+    btnAllGrain: "Grain : Tout Act./Désact.",
+    secAnim: "Animation",
+    chkAnimEnabled: "Activer l'animation",
+    chkAnimNoise: "Bruit animé",
+    chkAnimParticles: "Particules flottantes (±5%)",
+    chkAnimBlink: "Clignement des yeux",
+    chkAnimEars: "Oreilles mobiles",
+    chkAnimHead: "Inclinaison tête (±7°)",
+    chkAnimGlare: "Reflet 45°",
+    chkAnimHands: "Mains mobiles (5%)",
+    subGlareTargets: "Reflet 45° sur des éléments précis (act./désact.) :",
+    glareGlasses: "✨ Lunettes",
+    glareEarrings: "✨ Boucles",
+    glareHorns: "✨ Cornes",
+    glareHat: "✨ Chapeau",
+    glareCloth: "✨ Tenue",
+    glareParticles: "✨ Particules",
+    subHeadAnim: "Préréglages d'inclinaison de tête (±7°, 8) :",
+    subHandAnim: "Préréglages de mouvement des mains (10) :",
+    seedLabel: "Graine :",
+    seedPlaceholder: "Entrez une graine...",
+    btnNewSeed: "🎲 Aléatoire",
+    btnNewSeedTitle: "Générer une variante aléatoire",
+    btnPrevSeed: "← Retour",
+    btnPrevSeedTitle: "Restaurer la graine précédente",
+    btnApplySeed: "Appliquer",
+    btnApplySeedTitle: "Générer l'avatar selon la graine",
+    btnCopySeed: "Copier",
+    btnCopySeedTitle: "Copier la graine actuelle",
+    copiedText: "Copié !",
+    btnCloseAllTitle: "Réduire ou déplier tous les onglets",
+    closeAllTabs: "Fermer les onglets",
+    expandAllTabs: "Ouvrir les onglets",
+    btnColorLockAllTitle: "Verrouiller ou déverrouiller toutes les couleurs",
+    colorLockAll: "🎨 Figer couleurs : Tout",
+    colorUnlockAll: "🎨 Libérer couleurs : Tout",
+    btnLockAllTitle: "Verrouiller ou déverrouiller tous les cadenas",
+    lockAllClose: "🔒 Cadenas : Tout fermer",
+    lockAllOpen: "🔓 Cadenas : Tout ouvrir",
+    lockBtnUnlocked: "🔓 Aléatoire",
+    lockBtnLocked: "🔒 Verrouillé",
+    secColorModes: "Modes de couleur (Contraste & 3 couleurs)",
+    chkContrastTitle: "Politique de contraste : évite les couleurs conflictuelles entre couches superposées",
+    chkContrast: "Contraste",
+    chkThreeColorsTitle: "Utiliser seulement 3 couleurs harmonieuses pour tout l'avatar",
+    chkThreeColors: "Trois couleurs",
+    secPalette: "Palettes de couleurs (20)",
+    secGradient: "Dégradé maillé par parties (Mesh Gradient)",
+    chkGradientTitle: "Activer ou désactiver le dégradé maillé",
+    chkGradient: "Dégradé",
+    btnAllMesh: "Tout Act./Désact.",
+    btnAllMeshTitle: "Basculer le dégradé sur toutes les parties",
+    btnRerollMesh: "Dégradé aléatoire",
+    btnRerollMeshTitle: "Générer des nœuds de dégradé aléatoires",
+    layerBg: "Fond",
+    layerSkin: "Visage",
+    layerEars: "Oreilles",
+    layerEarrings: "Boucles",
+    layerBody: "Corps",
+    layerCloth: "Tenue",
+    layerHands: "Mains",
+    layerHairShort: "Cheveux : Courts",
+    layerHairBack: "Cheveux : Arrière",
+    layerHairBangs: "Frange",
+    layerHairTop: "Sommet",
+    layerFacialHair: "Barbe/Moustache",
+    layerHorns: "Cornes",
+    layerHat: "Chapeau",
+    layerHatGlasses: "Chapeau/Lunettes",
+    layerParticles: "Particules",
+    layerEyes: "Yeux",
+    layerNose: "Nez",
+    layerMouth: "Bouche",
+    layerAcc: "Accessoires",
+    layerGlasses: "Lunettes",
+    secNoise: "Grain de bruit (4) & Découpes géo (16)",
+    btnRerollNoise: "Bruit aléatoire par détail",
+    secBg: "Arrière-plan et aura dégradée (22)",
+    secFace: "Ovale du visage et joues (22)",
+    btnFaceBoostTitle: "Rehausser le haut de la tête pour combler les espaces",
+    btnFaceBoostPrefix: "Rehausser haut :",
+    lblFaceBoost: "Rehausser le haut de la tête :",
+    secEars: "Formes d'oreilles (16)",
+    secEarrings: "Boucles d'oreilles (15)",
+    secEyes: "Géométrie des yeux (61)",
+    secNose: "Nez minimaliste (15)",
+    secMouth: "Géométrie de la bouche et émotion (15)",
+    secFacialHair: "Barbes et moustaches (30)",
+    secHairShort: "Coiffure : Courte (50)",
+    btnSyncHair: "Sync. couleur cheveux",
+    secHairBack: "Coiffure : Silhouette arrière (50)",
+    secHairBangs: "Coiffure : Frange (50)",
+    secHairTop: "Coiffure : Sommet (50)",
+    secBodyShape: "Silhouette du corps (65)",
+    secClothDetail: "Détails de vêtements (50)",
+    secHands: "Mains flottantes (30)",
+    chkHandsEnabled: "Activer les mains",
+    btnSyncHands: "Couleur de peau",
+    btnRerollHands: "Décalage aléatoire",
+    subHandLeft: "Main gauche (30)",
+    subHandRight: "Main droite (30, miroir)",
+    secGlasses: "Lunettes et monocles (19)",
+    secHorns: "Cornes et antennes (15)",
+    secHat: "Couvre-chefs et casques audio (54)",
+    secAcc: "Accessoires du visage et masque (15)",
+    secParticles: "Particules et aura (50)",
+    btnScrollTopTitle: "Remonter en haut",
+    modalSupportBtn: "💖 Soutenir l'auteur",
+    customColorLabel: "Perso :",
+    customColorAria: "Couleur personnalisée",
+    lockColorLabel: "Figer couleur",
+    lockColorTitle: "Verrouiller uniquement la couleur de cet élément",
+    glarePillLabel: "✨ Reflet",
+    glarePillTitle: "Activer/désactiver le reflet 45° pour cet élément",
+    dlDownloadingFmt: "Téléchargement",
+    dlBuildingGif: "Création du GIF 512×512",
+    dlTitleGif: "Votre GIF est en cours de création !",
+    dlTitleSvg: "Soutenez-nous s'il vous plaît ! 💖",
+    dlSubGif: "Pendant la création de l'animation, soutenez notre projet si le générateur vous plaît ! 💖",
+    dlSubSvg: "Pendant la préparation du fichier, soutenez notre projet si le générateur vous plaît ! 💖",
+    dlAutoStart: "Le téléchargement automatique démarre dans :",
+    dlBuildingFrames: "Assemblage des images",
+    dlReadyDownloading: "Animation prête, téléchargement :",
+    dlPackingGif: "Empaquetage de l'animation GIF...",
+    dlSecUnit: " s",
+    dlLoading: "Téléchargement...",
+    dlFrameWord: "Image",
+    dlBtnPacking: "Empaquetage GIF...",
+    noneLabel: "Aucun"
+  },
+  ru: {
+    pageTitle: "Генератор Аргонят — Японский минимализм",
+    brandTitle: "Генератор Аргонят",
+    brandSubtitle: "Векторный конструктор из геометрических примитивов",
+    btnRandom: "🎲 Случайный сид",
+    btnRandomTitle: "Сгенерировать новый случайный сид",
+    btnExportSvg: "Скачать SVG",
+    btnExportPng: "Скачать PNG",
+    btnExportGif: "Скачать GIF 512×512",
+    stageHint: "Кликните по элементу, чтобы передвинуть или увеличить (±20%) • Удерживайте элемент, чтобы передвинуть немного (±10%)",
+    supportText: "Понравился генератор?<br>Пожалуйста, поддержите!",
+    supportBtn: "💖 Поддержать",
+    supportBtnTitle: "Перейти на страницу поддержки",
+    scaleDefaultLabel: "Кликните по элементу для масштаба (±20%) или зажмите для сдвига (±10%)",
+    scalePrefix: "Масштаб:",
+    btnResetOffsets: "Сброс правок",
+    btnResetOffsetsTitle: "Сбросить все ручные сдвиги и масштаб элементов",
+    btnAllGrain: "Зерно: Вкл/Выкл всё",
+    secAnim: "Анимация",
+    chkAnimEnabled: "Вкл. анимацию",
+    chkAnimNoise: "Движется шум",
+    chkAnimParticles: "Частички парят (±5%)",
+    chkAnimBlink: "Моргание глаз",
+    chkAnimEars: "Ушки двигаются",
+    chkAnimHead: "Наклон головы (±7°)",
+    chkAnimGlare: "Блик 45°",
+    chkAnimHands: "Ручки двигаются (5%)",
+    subGlareTargets: "Блик 45° на конкретных элементах (вкл/выкл):",
+    glareGlasses: "✨ Очки",
+    glareEarrings: "✨ Серьги",
+    glareHorns: "✨ Рога",
+    glareHat: "✨ Шапка",
+    glareCloth: "✨ Одежда",
+    glareParticles: "✨ Частицы",
+    subHeadAnim: "Пресеты качания головы (±7° от 0° на севере, 8):",
+    subHandAnim: "Пресеты движения рук (10):",
+    seedLabel: "Сид:",
+    seedPlaceholder: "Введите сид...",
+    btnNewSeed: "🎲 Случайный",
+    btnNewSeedTitle: "Сгенерировать случайный вариант",
+    btnPrevSeed: "← Назад",
+    btnPrevSeedTitle: "Вернуть предыдущий сид",
+    btnApplySeed: "Применить",
+    btnApplySeedTitle: "Сгенерировать Аргонёнка по указанному сиду",
+    btnCopySeed: "Копировать",
+    btnCopySeedTitle: "Скопировать текущий сид",
+    copiedText: "Скопировано!",
+    btnCloseAllTitle: "Свернуть или развернуть все вкладки конструктора",
+    closeAllTabs: "Закрыть все вкладки",
+    expandAllTabs: "Развернуть все вкладки",
+    btnColorLockAllTitle: "Зафиксировать или снять фиксацию всех цветов",
+    colorLockAll: "🎨 Фикс цвета: Все",
+    colorUnlockAll: "🎨 Фикс цвета: Снять все",
+    btnLockAllTitle: "Закрыть или открыть все замки от рандома",
+    lockAllClose: "🔒 Замки: Закрыть все",
+    lockAllOpen: "🔓 Замки: Открыть все",
+    lockBtnUnlocked: "🔓 В рандоме",
+    lockBtnLocked: "🔒 Закреплено",
+    secColorModes: "Режимы цвета (Контрастность и 3 цвета)",
+    chkContrastTitle: "Политика контрастности верхлежащего элемента",
+    chkContrast: "Контрастность",
+    chkThreeColorsTitle: "Использовать только 3 цвета для всех элементов и фона",
+    chkThreeColors: "Три цвета",
+    secPalette: "Цветовые палитры (20)",
+    secGradient: "Сетчатый градиент по частям тела (Mesh Gradient)",
+    chkGradientTitle: "Включить или отключить сетчатый градиент",
+    chkGradient: "Градиент",
+    btnAllMesh: "Вкл/Выкл всё",
+    btnAllMeshTitle: "Включить или выключить градиент на всех частях тела",
+    btnRerollMesh: "Рандом градиента",
+    btnRerollMeshTitle: "Сгенерировать случайные узлы и распределение градиента по деталям",
+    layerBg: "Фон",
+    layerSkin: "Лицо",
+    layerEars: "Ушки",
+    layerEarrings: "Серьги",
+    layerBody: "Силуэт",
+    layerCloth: "Одежда",
+    layerHands: "Кисти рук",
+    layerHairShort: "Волосы: Короткие",
+    layerHairBack: "Волосы: Зад",
+    layerHairBangs: "Чёлка",
+    layerHairTop: "Макушка",
+    layerFacialHair: "Борода/Усы",
+    layerHorns: "Рога",
+    layerHat: "Шапка",
+    layerHatGlasses: "Шапка/Очки",
+    layerParticles: "Частицы",
+    layerEyes: "Глаза",
+    layerNose: "Нос",
+    layerMouth: "Рот",
+    layerAcc: "Аксессуары",
+    layerGlasses: "Очки",
+    secNoise: "Яркое зерно шума (4) и гео-вычитание (16)",
+    btnRerollNoise: "Рандом шума по деталям",
+    secBg: "Задний план и градиентная аура (22)",
+    secFace: "Овал лица и пухлые щёчки (22)",
+    btnFaceBoostTitle: "Увеличить верх головы на N процентов для закрытия зазоров под прической или шапкой",
+    btnFaceBoostPrefix: "Увеличить верх:",
+    lblFaceBoost: "Увеличить верх головы (закрытие дырок):",
+    secEars: "Форма ушек (16)",
+    secEarrings: "Серьги (15)",
+    secEyes: "Геометрия глаз (61)",
+    secNose: "Минималистичный нос (15)",
+    secMouth: "Геометрия рта и эмоция (15)",
+    secFacialHair: "Бороды и усы (30)",
+    secHairShort: "Прическа: Короткая (50)",
+    btnSyncHair: "Синхр. цвет волос",
+    secHairBack: "Прическа: Задний силуэт (50)",
+    secHairBangs: "Прическа: Чёлка (50)",
+    secHairTop: "Прическа: Верх (50)",
+    secBodyShape: "Силуэт тела (65)",
+    secClothDetail: "Элементы одежды на теле (50)",
+    secHands: "Кисти рук (30)",
+    chkHandsEnabled: "Включить руки",
+    btnSyncHands: "В цвет кожи",
+    btnRerollHands: "Случайное смещение",
+    subHandLeft: "Левая кисть (30)",
+    subHandRight: "Правая кисть (30, зеркально)",
+    secGlasses: "Очки и монокли (19)",
+    secHorns: "Рога и антенны (15)",
+    secHat: "Головной убор и адаптивные наушники (54)",
+    secAcc: "Аксессуары лица и тканевая маска (15)",
+    secParticles: "Частицы и аура вокруг (50)",
+    btnScrollTopTitle: "Прокрутить наверх",
+    modalSupportBtn: "💖 Поддержать автора",
+    customColorLabel: "Свой:",
+    customColorAria: "Произвольный цвет элемента",
+    lockColorLabel: "Фикс цвета",
+    lockColorTitle: "Зафиксировать только цвет этого элемента (форма продолжит меняться в рандоме)",
+    glarePillLabel: "✨ Блик",
+    glarePillTitle: "Включить или отключить диагональный блик 45° для этого конкретного элемента",
+    dlDownloadingFmt: "Скачивание",
+    dlBuildingGif: "Сборка GIF 512×512",
+    dlTitleGif: "Ваша гиф формируется!",
+    dlTitleSvg: "Поддержите пожалуйста! 💖",
+    dlSubGif: "Пока анимация собирается, пожалуйста, поддержите наш проект, если вам понравился Генератор Аргонят! 💖",
+    dlSubSvg: "Пока файл формируется, пожалуйста, поддержите наш проект, если вам понравился Генератор Аргонят! 💖",
+    dlAutoStart: "Автоматическая загрузка начнётся через:",
+    dlBuildingFrames: "Сборка кадров",
+    dlReadyDownloading: "Анимация готова, скачивание:",
+    dlPackingGif: "Упаковка анимации GIF...",
+    dlSecUnit: " сек",
+    dlLoading: "Загрузка...",
+    dlFrameWord: "Кадр",
+    dlBtnPacking: "Упаковка GIF...",
+    noneLabel: "Нет"
+  }
+};
+
+// Переводы названий выбираемых на холсте частей (SUBPART_PIVOTS)
+const SUBPART_LABELS_I18N = {
+  en: {
+    handLeft: "Left Hand",
+    handRight: "Right Hand",
+    "ears:L": "Left Ear",
+    "ears:R": "Right Ear",
+    ears: "Ears",
+    "earrings:L": "Left Earring",
+    "earrings:R": "Right Earring",
+    earrings: "Earrings",
+    "eyes:L": "Left Eye",
+    "eyes:R": "Right Eye",
+    "eyes:C": "Third Eye",
+    eyes: "Eyes",
+    "horns:L": "Left Horn / Antenna",
+    "horns:R": "Right Horn / Antenna",
+    "horns:C": "Horn / Halo",
+    horns: "Horns & Antennas",
+    "acc:L": "Accessory (Left Cheek)",
+    "acc:R": "Accessory (Right Cheek)",
+    acc: "Face Accessory",
+    nose: "Nose",
+    mouth: "Mouth",
+    facialHair: "Beard & Mustache",
+    face: "Face Shape",
+    hairShort: "Short Hair",
+    hairBack: "Back Hair",
+    hairBangs: "Bangs",
+    hairTop: "Top Hair",
+    bodyShape: "Body Silhouette",
+    clothDetail: "Clothing Detail",
+    glasses: "Glasses / Monocle",
+    hat: "Headwear",
+    "particles:L": "Particles (Left)",
+    "particles:R": "Particles (Right)",
+    particles: "Particles & Aura"
+  },
+  es: {
+    handLeft: "Mano izquierda",
+    handRight: "Mano derecha",
+    "ears:L": "Oreja izquierda",
+    "ears:R": "Oreja derecha",
+    ears: "Orejas",
+    "earrings:L": "Pendiente izquierdo",
+    "earrings:R": "Pendiente derecho",
+    earrings: "Pendientes",
+    "eyes:L": "Ojo izquierdo",
+    "eyes:R": "Ojo derecho",
+    "eyes:C": "Tercer ojo",
+    eyes: "Ojos",
+    "horns:L": "Cuerno izquierdo",
+    "horns:R": "Cuerno derecho",
+    "horns:C": "Cuerno / Halo",
+    horns: "Cuernos y antenas",
+    "acc:L": "Accesorio (mejilla izq.)",
+    "acc:R": "Accesorio (mejilla der.)",
+    acc: "Accesorio facial",
+    nose: "Nariz",
+    mouth: "Boca",
+    facialHair: "Barba y bigote",
+    face: "Óvalo facial",
+    hairShort: "Pelo corto",
+    hairBack: "Pelo trasero",
+    hairBangs: "Flequillo",
+    hairTop: "Coronilla",
+    bodyShape: "Silueta del cuerpo",
+    clothDetail: "Detalle de ropa",
+    glasses: "Gafas / Monóculo",
+    hat: "Sombrero / Casco",
+    "particles:L": "Partículas (izq.)",
+    "particles:R": "Partículas (der.)",
+    particles: "Partículas y aura"
+  },
+  de: {
+    handLeft: "Linke Hand",
+    handRight: "Rechte Hand",
+    "ears:L": "Linkes Ohr",
+    "ears:R": "Rechtes Ohr",
+    ears: "Ohren",
+    "earrings:L": "Linker Ohrring",
+    "earrings:R": "Rechter Ohrring",
+    earrings: "Ohrringe",
+    "eyes:L": "Linkes Auge",
+    "eyes:R": "Rechtes Auge",
+    "eyes:C": "Drittes Auge",
+    eyes: "Augen",
+    "horns:L": "Linkes Horn",
+    "horns:R": "Rechtes Horn",
+    "horns:C": "Horn / Heiligenschein",
+    horns: "Hörner & Antennen",
+    "acc:L": "Accessoire (linke Wange)",
+    "acc:R": "Accessoire (rechte Wange)",
+    acc: "Gesichts-Accessoire",
+    nose: "Nase",
+    mouth: "Mund",
+    facialHair: "Bart & Schnurrbart",
+    face: "Gesichtsform",
+    hairShort: "Kurzhaarfrisur",
+    hairBack: "Hinterkopfhaare",
+    hairBangs: "Pony",
+    hairTop: "Oberkopfhaare",
+    bodyShape: "Körpersilhouette",
+    clothDetail: "Kleidungsdetail",
+    glasses: "Brille / Monokel",
+    hat: "Kopfbedeckung",
+    "particles:L": "Partikel (links)",
+    "particles:R": "Partikel (rechts)",
+    particles: "Partikel & Aura"
+  },
+  zh: {
+    handLeft: "左手",
+    handRight: "右手",
+    "ears:L": "左耳",
+    "ears:R": "右耳",
+    ears: "耳朵",
+    "earrings:L": "左耳环",
+    "earrings:R": "右耳环",
+    earrings: "耳环",
+    "eyes:L": "左眼",
+    "eyes:R": "右眼",
+    "eyes:C": "第三只眼",
+    eyes: "眼睛",
+    "horns:L": "左角/天线",
+    "horns:R": "右角/天线",
+    "horns:C": "独角/光环",
+    horns: "角与天线",
+    "acc:L": "配饰 (左脸颊)",
+    "acc:R": "配饰 (右脸颊)",
+    acc: "面部配饰",
+    nose: "鼻子",
+    mouth: "嘴巴",
+    facialHair: "胡须",
+    face: "脸型",
+    hairShort: "短发",
+    hairBack: "后发",
+    hairBangs: "刘海",
+    hairTop: "头顶发",
+    bodyShape: "身体轮廓",
+    clothDetail: "服装细节",
+    glasses: "眼镜/单片镜",
+    hat: "头饰/耳机",
+    "particles:L": "粒子 (左)",
+    "particles:R": "粒子 (右)",
+    particles: "粒子与光环"
+  },
+  fr: {
+    handLeft: "Main gauche",
+    handRight: "Main droite",
+    "ears:L": "Oreille gauche",
+    "ears:R": "Oreille droite",
+    ears: "Oreilles",
+    "earrings:L": "Boucle gauche",
+    "earrings:R": "Boucle droite",
+    earrings: "Boucles d'oreilles",
+    "eyes:L": "Œil gauche",
+    "eyes:R": "Œil droit",
+    "eyes:C": "Troisième œil",
+    eyes: "Yeux",
+    "horns:L": "Corne gauche",
+    "horns:R": "Corne droite",
+    "horns:C": "Corne / Auréole",
+    horns: "Cornes et antennes",
+    "acc:L": "Accessoire (joue gauche)",
+    "acc:R": "Accessoire (joue droite)",
+    acc: "Accessoire du visage",
+    nose: "Nez",
+    mouth: "Bouche",
+    facialHair: "Barbe et moustache",
+    face: "Ovale du visage",
+    hairShort: "Cheveux courts",
+    hairBack: "Cheveux arrière",
+    hairBangs: "Frange",
+    hairTop: "Sommet des cheveux",
+    bodyShape: "Silhouette du corps",
+    clothDetail: "Détail vestimentaire",
+    glasses: "Lunettes / Monocle",
+    hat: "Couvre-chef",
+    "particles:L": "Particules (gauche)",
+    "particles:R": "Particules (droite)",
+    particles: "Particules et aura"
+  }
+};
+
+// Переводы фиксированных пресетов (палитры, анимация, шум, гео-вычитание, фоны)
+const PRESET_LABELS_I18N = {
+  en: {
+    "pal-01": "Kyoto Autumn", "pal-02": "Neon Tokyo", "pal-03": "Zen Nature", "pal-04": "Matcha & Sakura",
+    "pal-05": "Nordic Sea", "pal-06": "Peach Sunset", "pal-07": "Lavender Dream", "pal-08": "Retro Arcade",
+    "pal-09": "Forest Kodama", "pal-10": "Royal Velvet", "pal-11": "Strawberry Milk", "pal-12": "Cyber Matrix",
+    "pal-13": "Dune Desert", "pal-14": "Ocean Abyss", "pal-15": "Caramel Latte", "pal-16": "Fuchsia Midnight",
+    "pal-17": "Nordic Cozy", "pal-18": "Tropical Mango", "pal-19": "Lunar Porcelain", "pal-20": "Golden Dragon",
+    floatSync: "Sync Float", floatAlt: "Alternating Swing", waveHello: "Wave Hello", pulseBeat: "Rhythmic Pulse",
+    orbitCircle: "Circular Orbit", clapBounce: "Clap Bounce", shiverExcite: "Excited Shiver", zenSway: "Zen Pendulum",
+    figureEight: "Figure Eight", magicCast: "Magic Cast",
+    pendulumSmooth: "Pendulum (±7°)", curiousTilt: "Curious Tilt", happyBob: "Happy Rhythm", shyPeek: "Shy Peek",
+    musicGroove: "Music Groove", dreamyFloat: "Dreamy Wave", sassySnap: "Sassy Snap", zenBreath: "Zen Breath",
+    mix: "Mix 3 Noises (Random)", v1: "Velvet (sf-noise)", v2: "Coarse (sf-noise-2)", v3: "Dense (sf-noise-3)",
+    random: "Geo-Cutout: Random", stripes: "Large Diagonals", circles: "Bauhaus Circles", triangles: "Soft Prisms",
+    blocks: "Square Blocks", waves: "Seigaiha Waves", zigzags: "Lightning Zigzag", stars: "Starbursts",
+    hearts: "Heart Silhouettes", diamonds: "Argyle Diamonds", rings: "Orbit Rings", crosses: "Plus & Crosses",
+    crescents: "Lunar Crescents", hexagons: "Honeycomb Hexagons", spirals: "Swirl Petals"
+  },
+  es: {
+    "pal-01": "Otoño en Kioto", "pal-02": "Tokio Neón", "pal-03": "Naturaleza Zen", "pal-04": "Matcha y Sakura",
+    "pal-05": "Mar del Norte", "pal-06": "Atardecer Melocotón", "pal-07": "Sueño Lavanda", "pal-08": "Arcade Retro",
+    "pal-09": "Kodama del Bosque", "pal-10": "Terciopelo Real", "pal-11": "Leche de Fresa", "pal-12": "Matriz Cyber",
+    "pal-13": "Desierto Duna", "pal-14": "Abismo Oceánico", "pal-15": "Latte Caramelo", "pal-16": "Fucsia Medianoche",
+    "pal-17": "Hogar Nórdico", "pal-18": "Mango Tropical", "pal-19": "Porcelana Lunar", "pal-20": "Dragón Dorado",
+    floatSync: "Flotación sincr.", floatAlt: "Balanceo alterno", waveHello: "Saludo con mano", pulseBeat: "Pulso rítmico",
+    orbitCircle: "Órbita circular", clapBounce: "Palmas", shiverExcite: "Temblor alegre", zenSway: "Péndulo Zen",
+    figureEight: "Figura ocho", magicCast: "Conjuro mágico",
+    pendulumSmooth: "Péndulo (±7°)", curiousTilt: "Giro curioso", happyBob: "Ritmo alegre", shyPeek: "Mirada tímida",
+    musicGroove: "Ritmo musical", dreamyFloat: "Onda soñadora", sassySnap: "Toque vivo", zenBreath: "Respiro Zen",
+    mix: "Mezcla 3 ruidos (Aleat.)", v1: "Terciopelo (sf-noise)", v2: "Grueso (sf-noise-2)", v3: "Denso (sf-noise-3)",
+    random: "Geo-recorte: Aleatorio", stripes: "Diagonales grandes", circles: "Círculos Bauhaus", triangles: "Prismas suaves",
+    blocks: "Bloques cuadrados", waves: "Olas Seigaiha", zigzags: "Zigzag rayo", stars: "Destellos estrella",
+    hearts: "Siluetas corazón", diamonds: "Rombos Argyle", rings: "Anillos órbita", crosses: "Cruces y signos +",
+    crescents: "Crecientes lunares", hexagons: "Panales hexágono", spirals: "Pétalos remolino"
+  },
+  de: {
+    "pal-01": "Kyoto-Herbst", "pal-02": "Neon-Tokio", "pal-03": "Zen-Natur", "pal-04": "Matcha & Sakura",
+    "pal-05": "Nordsee", "pal-06": "Pfirsich-Abendrot", "pal-07": "Lavendeltraum", "pal-08": "Retro-Arcade",
+    "pal-09": "Wald-Kodama", "pal-10": "Königssamt", "pal-11": "Erdbeermilch", "pal-12": "Cyber-Matrix",
+    "pal-13": "Wüstendüne", "pal-14": "Ozeantiefen", "pal-15": "Karamell-Latte", "pal-16": "Fuchsia-Mitternacht",
+    "pal-17": "Nordisch Gemütlich", "pal-18": "Tropen-Mango", "pal-19": "Mondporzellan", "pal-20": "Goldener Drache",
+    floatSync: "Synchr. Schweben", floatAlt: "Gegentakt-Schaukel", waveHello: "Winken", pulseBeat: "Rhythmischer Puls",
+    orbitCircle: "Kreisbahn", clapBounce: "Klatschen", shiverExcite: "Freudiges Zittern", zenSway: "Zen-Pendel",
+    figureEight: "Achterbahn", magicCast: "Magischer Zauber",
+    pendulumSmooth: "Pendel (±7°)", curiousTilt: "Neugierige Neigung", happyBob: "Fröhlicher Takt", shyPeek: "Schüchterner Blick",
+    musicGroove: "Musik-Groove", dreamyFloat: "Traumwelle", sassySnap: "Flotter Akzent", zenBreath: "Zen-Atem",
+    mix: "3er-Rauschmix (Zufall)", v1: "Samtig (sf-noise)", v2: "Grob (sf-noise-2)", v3: "Dicht (sf-noise-3)",
+    random: "Geo-Schnitt: Zufall", stripes: "Große Diagonalen", circles: "Bauhaus-Kreise", triangles: "Weiche Prismen",
+    blocks: "Quadrat-Blöcke", waves: "Seigaiha-Wellen", zigzags: "Blitz-Zickzack", stars: "Sternenfunken",
+    hearts: "Herz-Silhouetten", diamonds: "Argyle-Rauten", rings: "Orbit-Ringe", crosses: "Plus & Kreuze",
+    crescents: "Mondsicheln", hexagons: "Waben-Sechsecke", spirals: "Wirbelblätter"
+  },
+  zh: {
+    "pal-01": "京都之秋", "pal-02": "霓虹东京", "pal-03": "禅意自然", "pal-04": "抹茶与樱花",
+    "pal-05": "北海之滨", "pal-06": "蜜桃落日", "pal-07": "薰衣草之梦", "pal-08": "复古街机",
+    "pal-09": "森林木灵", "pal-10": "皇家丝绒", "pal-11": "草莓牛奶", "pal-12": "赛博矩阵",
+    "pal-13": "沙丘荒漠", "pal-14": "深海之渊", "pal-15": "焦糖拿铁", "pal-16": "紫红午夜",
+    "pal-17": "北欧温馨", "pal-18": "热带芒果", "pal-19": "月白瓷", "pal-20": "金龙献瑞",
+    floatSync: "同步漂浮", floatAlt: "交替摆动", waveHello: "挥手问好", pulseBeat: "律动脉冲",
+    orbitCircle: "环形轨道", clapBounce: "拍手跃动", shiverExcite: "欢快颤动", zenSway: "禅意钟摆",
+    figureEight: "八字轨迹", magicCast: "魔法施放",
+    pendulumSmooth: "平滑钟摆 (±7°)", curiousTilt: "好奇歪头", happyBob: "欢快律动", shyPeek: "害羞窥视",
+    musicGroove: "音乐律动", dreamyFloat: "梦幻波浪", sassySnap: "俏皮定格", zenBreath: "禅意呼吸",
+    mix: "3种噪点混合 (随机)", v1: "丝绒噪点 (sf-noise)", v2: "粗颗粒 (sf-noise-2)", v3: "高密度 (sf-noise-3)",
+    random: "几何镂空: 随机", stripes: "宽幅斜纹", circles: "包豪斯圆", triangles: "柔和棱镜",
+    blocks: "方块矩阵", waves: "青海波浪", zigzags: "闪电折线", stars: "星芒闪耀",
+    hearts: "爱心剪影", diamonds: "菱格纹", rings: "轨道圆环", crosses: "十字星号",
+    crescents: "新月弯弧", hexagons: "蜂巢六边形", spirals: "旋涡花瓣"
+  },
+  fr: {
+    "pal-01": "Automne à Kyoto", "pal-02": "Tokyo Néon", "pal-03": "Nature Zen", "pal-04": "Matcha & Sakura",
+    "pal-05": "Mer du Nord", "pal-06": "Coucher Pêche", "pal-07": "Rêve Lavande", "pal-08": "Arcade Rétro",
+    "pal-09": "Kodama Sylvestre", "pal-10": "Velours Royal", "pal-11": "Lait Fraise", "pal-12": "Matrice Cyber",
+    "pal-13": "Désert de Dune", "pal-14": "Abysse Océanique", "pal-15": "Latte Caramel", "pal-16": "Fuchsia Minuit",
+    "pal-17": "Cosy Nordique", "pal-18": "Mangue Tropicale", "pal-19": "Porcelaine Lunaire", "pal-20": "Dragon d'Or",
+    floatSync: "Flottement sync.", floatAlt: "Balancier alterné", waveHello: "Salut de la main", pulseBeat: "Impulsion rythmée",
+    orbitCircle: "Orbite circulaire", clapBounce: "Mains rapprochées", shiverExcite: "Frisson joyeux", zenSway: "Pendule Zen",
+    figureEight: "Chiffre huit", magicCast: "Sort magique",
+    pendulumSmooth: "Pendule (±7°)", curiousTilt: "Inclinaison curieuse", happyBob: "Rythme joyeux", shyPeek: "Regard timide",
+    musicGroove: "Groove musical", dreamyFloat: "Onde rêveuse", sassySnap: "Accent vif", zenBreath: "Souffle Zen",
+    mix: "Mix 3 bruits (Aléat.)", v1: "Velours (sf-noise)", v2: "Grand grain (sf-noise-2)", v3: "Dense (sf-noise-3)",
+    random: "Géo-découpe : Aléatoire", stripes: "Grandes diagonales", circles: "Cercles Bauhaus", triangles: "Prismes doux",
+    blocks: "Blocs carrés", waves: "Vagues Seigaiha", zigzags: "Zigzag éclair", stars: "Éclats d'étoiles",
+    hearts: "Silhouettes cœurs", diamonds: "Losanges Argyle", rings: "Anneaux d'orbite", crosses: "Plus & Croix",
+    crescents: "Croissants lunaires", hexagons: "Hexagones ruche", spirals: "Pétales tourbillon"
+  }
+};
+
+// Перевод ключевых токенов ID опций на испанский, немецкий, китайский и французский
+const TOKEN_I18N = {
+  es: {
+    round: "Redondo", soft: "Suave", oval: "Óvalo", chubby: "Mejillas", cheeks: "Rellenas", square: "Cuadrado",
+    heart: "Corazón", diamond: "Diamante", pear: "Pera", hexagon: "Hexágono", cloud: "Nube", shield: "Escudo",
+    elf: "Elfo", short: "Corto", long: "Largo", cat: "Gato", ears: "Orejas", ear: "Oreja", bunny: "Conejo",
+    bear: "Oso", frog: "Rana", fox: "Zorro", wolf: "Lobo", deer: "Ciervo", dragon: "Dragón", unicorn: "Unicornio",
+    horns: "Cuernos", antenna: "Antena", halo: "Halo", ring: "Anillo", rings: "Anillos", crown: "Corona",
+    star: "Estrella", stars: "Estrellas", moon: "Luna", moons: "Lunas", sun: "Sol", fire: "Fuego", flames: "Llamas",
+    water: "Agua", snow: "Nieve", snowflakes: "Copos", sakura: "Sakura", petals: "Pétalos", flower: "Flor",
+    floral: "Floral", leaves: "Hojas", leaf: "Hoja", maple: "Arce", butterfly: "Mariposa", butterflies: "Mariposas",
+    sparkles: "Destellos", sparkle: "Destello", aura: "Aura", rainbow: "Arcoíris", lightning: "Rayo",
+    angry: "Enojado", fury: "Furia", demon: "Demonio", laser: "Láser", glowing: "Brillante", shadow: "Sombra",
+    sad: "Triste", tears: "Lágrimas", tear: "Lágrima", happy: "Feliz", wink: "Guiño", sleepy: "Soñoliento",
+    calm: "Calma", cute: "Tierno", anime: "Anime", wide: "Amplio", big: "Grande", tiny: "Pequeño", small: "Pequeño",
+    mini: "Mini", max: "Máx", smile: "Sonrisa", smirk: "Sonrisa pícara", fang: "Colmillo", tongue: "Lengua",
+    beard: "Barba", mustache: "Bigote", stubble: "Barba de 3 días", full: "Completa", goatee: "Perilla",
+    mutton: "Patillas", chops: "Anchas", wizard: "Mago", witch: "Bruja", sensei: "Sensei",viking: "Vikingo",
+    hoodie: "Sudadera", kimono: "Kimono", sweater: "Suéter", jacket: "Chaqueta", coat: "Abrigo", vest: "Chaleco",
+    scarf: "Bufanda", tie: "Corbata", bowtie: "Pajarita", armor: "Armadura", cape: "Capa", robe: "Túnica",
+    hat: "Sombrero", cap: "Gorra", beanie: "Gorro", beret: "Boina", helmet: "Casco", headphones: "Auriculares",
+    headset: "Casco Gamer", earmuffs: "Orejeras", fluffy: "Esponjoso", gamer: "Gamer", gaming: "Gaming",
+    glasses: "Gafas", goggles: "Goggles", monocle: "Monóculo", visor: "Visor", mask: "Máscara", blush: "Rubor",
+    freckles: "Pecas", whiskers: "Bigotes", peace: "Paz", thumbs: "Pulgar", up: "Arriba", down: "Abajo",
+    fist: "Puño", open: "Abierta", wave: "Saludo", point: "Señalar", rock: "Rock", ok: "OK", pray: "Oración"
+  },
+  de: {
+    round: "Rund", soft: "Weich", oval: "Oval", chubby: "Pausbacken", cheeks: "Wangen", square: "Quadrat",
+    heart: "Herz", diamond: "Diamant", pear: "Birne", hexagon: "Sechseck", cloud: "Wolke", shield: "Schild",
+    elf: "Elfen", short: "Kurz", long: "Lang", cat: "Katzen", ears: "Ohren", ear: "Ohr", bunny: "Hasen",
+    bear: "Bären", frog: "Frosch", fox: "Fuchs", wolf: "Wolf", deer: "Hirsch", dragon: "Drachen", unicorn: "Einhorn",
+    horns: "Hörner", antenna: "Antenne", halo: "Heiligenschein", ring: "Ring", rings: "Ringe", crown: "Krone",
+    star: "Stern", stars: "Sterne", moon: "Mond", moons: "Monde", sun: "Sonne", fire: "Feuer", flames: "Flammen",
+    water: "Wasser", snow: "Schnee", snowflakes: "Schneeflocken", sakura: "Sakura", petals: "Blüten", flower: "Blume",
+    floral: "Blumen", leaves: "Blätter", leaf: "Blatt", maple: "Ahorn", butterfly: "Schmetterling", butterflies: "Schmetterlinge",
+    sparkles: "Funken", sparkle: "Glitzer", aura: "Aura", rainbow: "Regenbogen", lightning: "Blitz",
+    angry: "Wütend", fury: "Zorn", demon: "Dämon", laser: "Laser", glowing: "Leuchtend", shadow: "Schatten",
+    sad: "Traurig", tears: "Tränen", tear: "Träne", happy: "Fröhlich", wink: "Zwinkern", sleepy: "Schläfrig",
+    calm: "Ruhig", cute: "Niedlich", anime: "Anime", wide: "Weit", big: "Groß", tiny: "Winzig", small: "Klein",
+    mini: "Mini", max: "Max", smile: "Lächeln", smirk: "Grinsen", fang: "Reißzahn", tongue: "Zunge",
+    beard: "Bart", mustache: "Schnurrbart", stubble: "Dreitagebart", full: "Vollbart", goatee: "Spitzbart",
+    mutton: "Koteletten", chops: "Breit", wizard: "Zauberer", witch: "Hexe", sensei: "Sensei", viking: "Wikinger",
+    hoodie: "Hoodie", kimono: "Kimono", sweater: "Pullover", jacket: "Jacke", coat: "Mantel", vest: "Weste",
+    scarf: "Schal", tie: "Krawatte", bowtie: "Fliege", armor: "Rüstung", cape: "Umhang", robe: "Robe",
+    hat: "Hut", cap: "Kappe", beanie: "Mütze", beret: "Baskenmütze", helmet: "Helm", headphones: "Kopfhörer",
+    headset: "Headset", earmuffs: "Ohrenschützer", fluffy: "Flauschig", gamer: "Gamer", gaming: "Gaming",
+    glasses: "Brille", goggles: "Schutzbrille", monocle: "Monokel", visor: "Visier", mask: "Maske", blush: "Rouge",
+    freckles: "Sommersprossen", whiskers: "Schnurrhaare", peace: "Peace", thumbs: "Daumen", up: "Hoch", down: "Runter",
+    fist: "Faust", open: "Offen", wave: "Winken", point: "Zeigen", rock: "Rock", ok: "OK", pray: "Gebet"
+  },
+  zh: {
+    round: "圆润", soft: "柔和", oval: "椭圆", chubby: "嘟嘟", cheeks: "脸颊", square: "方形",
+    heart: "爱心", diamond: "菱形", pear: "梨形", hexagon: "六角", cloud: "云朵", shield: "盾形",
+    elf: "精灵", short: "短", long: "长", cat: "猫咪", ears: "耳朵", ear: "耳", bunny: "兔",
+    bear: "小熊", frog: "青蛙", fox: "狐狸", wolf: "狼", deer: "鹿", dragon: "龙", unicorn: "独角兽",
+    horns: "角", antenna: "天线", halo: "光环", ring: "环", rings: "圆环", crown: "皇冠",
+    star: "星", stars: "繁星", moon: "月", moons: "新月", sun: "太阳", fire: "火焰", flames: "烈焰",
+    water: "水滴", snow: "雪", snowflakes: "雪花", sakura: "樱花", petals: "花瓣", flower: "花朵",
+    floral: "花卉", leaves: "落叶", leaf: "叶子", maple: "枫叶", butterfly: "蝴蝶", butterflies: "群蝶",
+    sparkles: "闪光", sparkle: "星光", aura: "气场", rainbow: "彩虹", lightning: "闪电",
+    angry: "愤怒", fury: "狂怒", demon: "恶魔", laser: "激光", glowing: "发光", shadow: "暗影",
+    sad: "悲伤", tears: "泪水", tear: "泪滴", happy: "开心", wink: "眨眼", sleepy: "困倦",
+    calm: "平静", cute: "可爱", anime: "动漫", wide: "宽", big: "大", tiny: "微", small: "小",
+    mini: "迷你", max: "特大", smile: "微笑", smirk: "坏笑", fang: "虎牙", tongue: "吐舌",
+    beard: "胡须", mustache: "八字胡", stubble: "胡茬", full: "大胡子", goatee: "山羊胡",
+    mutton: "连鬓", chops: "络腮胡", wizard: "法师", witch: "女巫", sensei: "宗师", viking: "维京",
+    hoodie: "连帽衫", kimono: "和服", sweater: "毛衣", jacket: "夹克", coat: "大衣", vest: "背心",
+    scarf: "围巾", tie: "领带", bowtie: "领结", armor: "铠甲", cape: "披风", robe: "长袍",
+    hat: "帽", cap: "鸭舌帽", beanie: "冷帽", beret: "贝雷帽", helmet: "头盔", headphones: "耳机",
+    headset: "电竞耳麦", earmuffs: "毛绒耳罩", fluffy: "蓬松", gamer: "玩家", gaming: "电竞",
+    glasses: "眼镜", goggles: "护目镜", monocle: "单片镜", visor: "面罩", mask: "口罩", blush: "腮红",
+    freckles: "雀斑", whiskers: "胡须纹", peace: "剪刀手", thumbs: "大拇指", up: "向上", down: "向下",
+    fist: "握拳", open: "张开", wave: "挥手", point: "指向", rock: "摇滚", ok: "OK", pray: "合十"
+  },
+  fr: {
+    round: "Rond", soft: "Doux", oval: "Ovale", chubby: "Joues", cheeks: "Dodues", square: "Carré",
+    heart: "Cœur", diamond: "Diamant", pear: "Poire", hexagon: "Hexagone", cloud: "Nuage", shield: "Bouclier",
+    elf: "Elfe", short: "Court", long: "Long", cat: "Chat", ears: "Oreilles", ear: "Oreille", bunny: "Lapin",
+    bear: "Ours", frog: "Grenouille", fox: "Renard", wolf: "Loup", deer: "Cerf", dragon: "Dragon", unicorn: "Licorne",
+    horns: "Cornes", antenna: "Antenne", halo: "Auréole", ring: "Anneau", rings: "Anneaux", crown: "Couronne",
+    star: "Étoile", stars: "Étoiles", moon: "Lune", moons: "Lunes", sun: "Soleil", fire: "Feu", flames: "Flammes",
+    water: "Eau", snow: "Neige", snowflakes: "Flocons", sakura: "Sakura", petals: "Pétales", flower: "Fleur",
+    floral: "Floral", leaves: "Feuilles", leaf: "Feuille", maple: "Érable", butterfly: "Papillon", butterflies: "Papillons",
+    sparkles: "Étincelles", sparkle: "Éclat", aura: "Aura", rainbow: "Arc-en-ciel", lightning: "Éclair",
+    angry: "Colère", fury: "Furie", demon: "Démon", laser: "Laser", glowing: "Lumineux", shadow: "Ombre",
+    sad: "Triste", tears: "Larmes", tear: "Larme", happy: "Joyeux", wink: "Clin d'œil", sleepy: "Endormi",
+    calm: "Calme", cute: "Mignon", anime: "Anime", wide: "Large", big: "Grand", tiny: "Minuscule", small: "Petit",
+    mini: "Mini", max: "Max", smile: "Sourire", smirk: "Sourire en coin", fang: "Croc", tongue: "Langue",
+    beard: "Barbe", mustache: "Moustache", stubble: "Barbe de 3 jours", full: "Complète", goatee: "Bouc",
+    mutton: "Favoris", chops: "Larges", wizard: "Mage", witch: "Sorcière", sensei: "Sensei", viking: "Viking",
+    hoodie: "Sweat", kimono: "Kimono", sweater: "Pull", jacket: "Veste", coat: "Manteau", vest: "Gilet",
+    scarf: "Écharpe", tie: "Cravate", bowtie: "Nœud papillon", armor: "Armure", cape: "Cape", robe: "Robe",
+    hat: "Chapeau", cap: "Casquette", beanie: "Bonnet", beret: "Béret", helmet: "Casque", headphones: "Écouteurs",
+    headset: "Casque Gamer", earmuffs: "Cache-oreilles", fluffy: "Moelleux", gamer: "Gamer", gaming: "Gaming",
+    glasses: "Lunettes", goggles: "Lunettes pro", monocle: "Monocle", visor: "Visière", mask: "Masque", blush: "Blush",
+    freckles: "Taches de rousseur", whiskers: "Moustaches", peace: "Paix", thumbs: "Pouce", up: "Haut", down: "Bas",
+    fist: "Poing", open: "Ouverte", wave: "Salut", point: "Pointer", rock: "Rock", ok: "OK", pray: "Prière"
+  }
+};
+
+// Получение перевода строки интерфейса по ключу
+function t(key) {
+  const dict = UI_I18N[currentLang] || UI_I18N.en;
+  return dict[key] !== undefined ? dict[key] : (UI_I18N.en[key] || key);
+}
+
+// Получение локализованного названия части тела для панели масштаба
+function getLocalizedSubpartLabel(subpartKey) {
+  if (currentLang === "ru") {
+    return (SUBPART_PIVOTS[subpartKey] && SUBPART_PIVOTS[subpartKey].label) || subpartKey;
+  }
+  const map = SUBPART_LABELS_I18N[currentLang] || SUBPART_LABELS_I18N.en;
+  return map[subpartKey] || SUBPART_LABELS_I18N.en[subpartKey] || subpartKey;
+}
+
+// Получение локализованной подписи для кнопки-опции (782 пресета)
+function getLocalizedOptionLabel(stateKey, item) {
+  if (!item) return "";
+  if (currentLang === "ru") {
+    return item.rawLabel || item.label || "";
+  }
+  const id = String(item.id || "");
+  if (id === "none") {
+    return t("noneLabel");
+  }
+  const presetMap = PRESET_LABELS_I18N[currentLang] || PRESET_LABELS_I18N.en;
+  if (presetMap[id]) {
+    return presetMap[id];
+  }
+  if (/^grad-\d+$/.test(id)) {
+    const num = id.split("-")[1];
+    const auraWord = { en: "Aura", es: "Aura", de: "Aura", zh: "光环", fr: "Aura" }[currentLang] || "Aura";
+    return `${auraWord} #${num}`;
+  }
+  const rawTokens = id
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Za-z])(\d+)/g, "$1 $2")
+    .replace(/[-_]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  const tokMap = TOKEN_I18N[currentLang] || {};
+  return rawTokens
+    .map((tok) => {
+      const low = tok.toLowerCase();
+      if (tokMap[low]) return tokMap[low];
+      return tok.charAt(0).toUpperCase() + tok.slice(1);
+    })
+    .join(currentLang === "zh" ? "" : " ");
+}
+
+// Применение выбранного языка ко всем статическим и динамическим элементам страницы
+function applyLocalization(lang) {
+  if (UI_I18N[lang]) {
+    currentLang = lang;
+  } else {
+    currentLang = "en";
+  }
+  document.documentElement.lang = currentLang;
+  document.title = t("pageTitle");
+
+  // Переключаем активную кнопку флага в шапке
+  document.querySelectorAll("#lang-switcher .lang-btn").forEach((btn) => {
+    btn.classList.toggle("is-active", btn.getAttribute("data-lang") === currentLang);
+  });
+
+  // Обновляем текстовые узлы с data-i18n
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (key) el.textContent = t(key);
+  });
+
+  // Обновляем узлы с HTML-переносом строки (data-i18n-html)
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (key) el.innerHTML = t(key);
+  });
+
+  // Обновляем placeholder полей ввода
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (key) el.setAttribute("placeholder", t(key));
+  });
+
+  // Обновляем всплывающие подсказки title
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    if (key) el.setAttribute("title", t(key));
+  });
+
+  initAllControls();
+  syncLockButtons();
+  syncCloseAllButtons();
+  syncScaleSliderUI();
+}
 
 // Соответствие ключа опции и ключа цвета в state.colors
 const STATE_KEY_TO_COLOR_KEY = {
@@ -8865,7 +10213,8 @@ function renderOptionButtons(containerId, list, stateKey) {
     const isActive = stateKey === "bg" ? !state.useCustomBg && state.bg === item.id : state[stateKey] === item.id;
     btn.className = `chip-btn ${isActive ? "is-active" : ""}`;
     const thumbSvg = buildOptionSilhouetteSvg(stateKey, item);
-    btn.innerHTML = `${thumbSvg}<span class="chip-label">${item.label}</span>`;
+    const localizedLabel = getLocalizedOptionLabel(stateKey, item);
+    btn.innerHTML = `${thumbSvg}<span class="chip-label">${localizedLabel}</span>`;
     btn.addEventListener("click", () => {
       state[stateKey] = item.id;
       // При смене элемента сбрасываем его ручные правки перемещения и масштаба (возвращаем на точку спавна)
@@ -8994,13 +10343,13 @@ function initColorBars() {
 
     const label = document.createElement("span");
     label.className = "color-picker-label";
-    label.textContent = "Свой:";
+    label.textContent = t("customColorLabel");
 
     const input = document.createElement("input");
     input.type = "color";
     input.className = "color-picker-input";
     input.value = currentHex.toLowerCase();
-    input.setAttribute("aria-label", "Произвольный цвет элемента");
+    input.setAttribute("aria-label", t("customColorAria"));
     input.addEventListener("input", (e) => {
       applyElementColor(targetKey, e.target.value);
     });
@@ -9008,7 +10357,7 @@ function initColorBars() {
     const lockLabel = document.createElement("label");
     const isColLocked = Boolean(state.colorLocks && state.colorLocks[targetKey]);
     lockLabel.className = `color-lock-toggle ${isColLocked ? "is-locked" : ""}`;
-    lockLabel.title = "Зафиксировать только цвет этого элемента (форма продолжит меняться в рандоме)";
+    lockLabel.title = t("lockColorTitle");
 
     const lockChk = document.createElement("input");
     lockChk.type = "checkbox";
@@ -9021,7 +10370,7 @@ function initColorBars() {
     });
 
     const lockSpan = document.createElement("span");
-    lockSpan.textContent = "Фикс цвета";
+    lockSpan.textContent = t("lockColorLabel");
 
     lockLabel.appendChild(lockChk);
     lockLabel.appendChild(lockSpan);
@@ -9036,7 +10385,7 @@ function initColorBars() {
       const hasGlare = Boolean(state.glareTargets && state.glareTargets[targetKey]);
       glareLabel.className = `glare-lock-toggle ${hasGlare ? "is-active" : ""}`;
       glareLabel.setAttribute("data-glare-bar-target", targetKey);
-      glareLabel.title = "Включить или отключить диагональный блик 45° для этого конкретного элемента";
+      glareLabel.title = t("glarePillTitle");
 
       const glareChk = document.createElement("input");
       glareChk.type = "checkbox";
@@ -9049,7 +10398,7 @@ function initColorBars() {
       });
 
       const glareSpan = document.createElement("span");
-      glareSpan.textContent = "✨ Блик";
+      glareSpan.textContent = t("glarePillLabel");
 
       glareLabel.appendChild(glareChk);
       glareLabel.appendChild(glareSpan);
@@ -9086,7 +10435,7 @@ function syncColorLockAllButton() {
   const btn = document.getElementById("btn-color-lock-all");
   if (btn) {
     btn.classList.toggle("btn-primary", allLocked);
-    btn.textContent = allLocked ? "🎨 Фикс цвета: Снять все" : "🎨 Фикс цвета: Все";
+    btn.textContent = allLocked ? t("colorUnlockAll") : t("colorLockAll");
   }
 }
 
@@ -9097,7 +10446,7 @@ function syncFaceTopBoostUI() {
   const rng = document.getElementById("rng-face-top-boost");
   const lbl = document.getElementById("lbl-face-top-boost");
   if (btn) {
-    btn.textContent = `Увеличить верх: +${pct}%`;
+    btn.textContent = `${t("btnFaceBoostPrefix")} +${pct}%`;
   }
   if (rng) {
     rng.value = String(pct);
@@ -9710,16 +11059,16 @@ function triggerSupportCountdownBeforeDownload(formatLabel, downloadAction) {
   }
 
   if (lblFormat) {
-    lblFormat.textContent = `Скачивание ${formatLabel}`;
+    lblFormat.textContent = `${t("dlDownloadingFmt")} ${formatLabel}`;
   }
   if (lblTitle) {
-    lblTitle.textContent = formatLabel.includes("GIF") ? "Ваша гиф формируется!" : "Поддержите пожалуйста! 💖";
+    lblTitle.textContent = formatLabel.includes("GIF") ? t("dlTitleGif") : t("dlTitleSvg");
   }
   if (lblSubtitle) {
-    lblSubtitle.textContent = "Пока файл формируется, пожалуйста, поддержите наш проект, если вам понравился Генератор Аргонят! 💖";
+    lblSubtitle.textContent = t("dlSubSvg");
   }
   if (lblStatusText) {
-    lblStatusText.textContent = "Автоматическая загрузка начнётся через:";
+    lblStatusText.textContent = t("dlAutoStart");
   }
 
   if (activeDownloadCountdownTimer) {
@@ -9729,7 +11078,7 @@ function triggerSupportCountdownBeforeDownload(formatLabel, downloadAction) {
 
   const totalMs = 3000;
   const startedAt = Date.now();
-  if (lblSec) lblSec.textContent = "3 сек";
+  if (lblSec) lblSec.textContent = `3${t("dlSecUnit")}`;
   if (barFill) barFill.style.width = "100%";
 
   modal.classList.add("is-open");
@@ -9742,7 +11091,7 @@ function triggerSupportCountdownBeforeDownload(formatLabel, downloadAction) {
     const pct = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100));
 
     if (lblSec) {
-      lblSec.textContent = remainingSec > 0 ? `${remainingSec} сек` : "Загрузка...";
+      lblSec.textContent = remainingSec > 0 ? `${remainingSec}${t("dlSecUnit")}` : t("dlLoading");
     }
     if (barFill) {
       barFill.style.width = `${pct.toFixed(1)}%`;
@@ -10041,13 +11390,13 @@ async function performExportGif() {
   const startedAt = Date.now();
 
   if (modal) {
-    if (lblFormat) lblFormat.textContent = "Сборка GIF 512×512";
-    if (lblTitle) lblTitle.textContent = "Ваша гиф формируется!";
+    if (lblFormat) lblFormat.textContent = t("dlBuildingGif");
+    if (lblTitle) lblTitle.textContent = t("dlTitleGif");
     if (lblSubtitle) {
-      lblSubtitle.textContent = "Пока анимация собирается, пожалуйста, поддержите наш проект, если вам понравился Генератор Аргонят! 💖";
+      lblSubtitle.textContent = t("dlSubGif");
     }
-    if (lblStatusText) lblStatusText.textContent = "Сборка кадров (1/20):";
-    if (lblSec) lblSec.textContent = "3 сек";
+    if (lblStatusText) lblStatusText.textContent = `${t("dlBuildingFrames")} (1/20):`;
+    if (lblSec) lblSec.textContent = `3${t("dlSecUnit")}`;
     if (barFill) barFill.style.width = "100%";
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
@@ -10062,14 +11411,14 @@ async function performExportGif() {
 
       if (lblStatusText) {
         lblStatusText.textContent = isEncodingDone
-          ? "Анимация готова, скачивание:"
-          : `Сборка кадров (${Math.min(totalFrames, currentFrameDone + 1)}/${totalFrames}):`;
+          ? t("dlReadyDownloading")
+          : `${t("dlBuildingFrames")} (${Math.min(totalFrames, currentFrameDone + 1)}/${totalFrames}):`;
       }
       if (lblSec) {
         if (remainingSec > 0) {
-          lblSec.textContent = `${remainingSec} сек`;
+          lblSec.textContent = `${remainingSec}${t("dlSecUnit")}`;
         } else {
-          lblSec.textContent = isEncodingDone ? "Загрузка..." : `Кадр ${currentFrameDone}/${totalFrames}`;
+          lblSec.textContent = isEncodingDone ? t("dlLoading") : `${t("dlFrameWord")} ${currentFrameDone}/${totalFrames}`;
         }
       }
       if (barFill) {
@@ -10111,7 +11460,7 @@ async function performExportGif() {
       currentFrameDone = f;
       setBtnStatus(`GIF ${f + 1}/${totalFrames}...`, true);
       if (lblStatusText) {
-        lblStatusText.textContent = `Сборка кадров (${f + 1}/${totalFrames}):`;
+        lblStatusText.textContent = `${t("dlBuildingFrames")} (${f + 1}/${totalFrames}):`;
       }
       const tSec = (f / totalFrames) * loopDurationSec;
       const svgData = buildSvgString(tSec);
@@ -10137,8 +11486,8 @@ async function performExportGif() {
     }
 
     currentFrameDone = totalFrames;
-    setBtnStatus("Упаковка GIF...", true);
-    if (lblStatusText) lblStatusText.textContent = "Упаковка анимации GIF...";
+    setBtnStatus(t("dlBtnPacking"), true);
+    if (lblStatusText) lblStatusText.textContent = t("dlPackingGif");
     await new Promise((r) => setTimeout(r, 15));
 
     const gifBytes = encodeGif89a(framesRgba, width, height, delayCs);
@@ -10236,10 +11585,19 @@ document.addEventListener("DOMContentLoaded", () => {
   } finally {
     activeRng = null;
   }
-  initAllControls();
+
+  // Привязываем кнопки переключения языков с флагами в шапке (по умолчанию английский "en")
+  document.querySelectorAll("#lang-switcher .lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const lang = btn.getAttribute("data-lang") || "en";
+      applyLocalization(lang);
+    });
+  });
+
   setupGrainControls();
   setupLockControls();
   setupStagePartClick();
+  applyLocalization("en");
   updateStage();
 
   const btnScrollTop = document.getElementById("btn-scroll-top");
@@ -10286,10 +11644,9 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (_err) {
         // Fallback при отсутствии доступа к буферу
       }
-      const orig = btnCopySeed.textContent;
-      btnCopySeed.textContent = "Скопировано!";
+      btnCopySeed.textContent = t("copiedText");
       setTimeout(() => {
-        btnCopySeed.textContent = orig;
+        btnCopySeed.textContent = t("btnCopySeed");
       }, 1200);
     });
   }

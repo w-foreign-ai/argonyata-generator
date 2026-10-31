@@ -1,24 +1,81 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Генератор Аргонят — Японский минимализм</title>
-  <link rel="stylesheet" href="styles.css?v=20261031v11" />
+  <title>Argonyata Generator — Japanese Minimalism</title>
+  <link rel="stylesheet" href="styles.css?v=20261031v12" />
 </head>
 <body>
   <!-- Фиксированная шапка приложения (не исчезает при прокрутке вниз) -->
   <header class="header">
     <div class="brand">
       <div class="brand-badge">Ar</div>
-      <h1 class="brand-title">Генератор Аргонят</h1>
-      <span class="brand-subtitle">Векторный конструктор из геометрических примитивов</span>
+      <h1 class="brand-title" data-i18n="brandTitle">Argonyata Generator</h1>
+      <span class="brand-subtitle" data-i18n="brandSubtitle">Vector avatar builder from geometric primitives</span>
     </div>
-    <div class="header-actions">
-      <button type="button" class="btn btn-accent" id="btn-random" title="Сгенерировать новый случайный сид">🎲 Случайный сид</button>
-      <button type="button" class="btn" id="btn-export-svg">Скачать SVG</button>
-      <button type="button" class="btn btn-primary" id="btn-export-png">Скачать PNG</button>
-      <button type="button" class="btn btn-accent" id="btn-export-gif">Скачать GIF 512×512</button>
+    <div class="header-right">
+      <!-- Переключатель языков с векторными флагами в шапке (по умолчанию английский) -->
+      <div class="lang-switcher" id="lang-switcher" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en" title="English">
+          <svg class="flag-svg" viewBox="0 0 24 16" aria-hidden="true">
+            <rect width="24" height="16" rx="2" fill="#012169"/>
+            <path d="M0 0L24 16M24 0L0 16" stroke="#FFFFFF" stroke-width="3.2"/>
+            <path d="M0 0L24 16M24 0L0 16" stroke="#C8102E" stroke-width="1.6"/>
+            <path d="M12 0V16M0 8H24" stroke="#FFFFFF" stroke-width="4.8"/>
+            <path d="M12 0V16M0 8H24" stroke="#C8102E" stroke-width="2.8"/>
+          </svg>
+          <span>EN</span>
+        </button>
+        <button type="button" class="lang-btn" data-lang="es" title="Español">
+          <svg class="flag-svg" viewBox="0 0 24 16" aria-hidden="true">
+            <rect width="24" height="16" rx="2" fill="#AA151B"/>
+            <rect y="4" width="24" height="8" fill="#F1BF00"/>
+          </svg>
+          <span>ES</span>
+        </button>
+        <button type="button" class="lang-btn" data-lang="de" title="Deutsch">
+          <svg class="flag-svg" viewBox="0 0 24 16" aria-hidden="true">
+            <rect width="24" height="5.4" fill="#000000"/>
+            <rect y="5.3" width="24" height="5.4" fill="#DD0000"/>
+            <rect y="10.6" width="24" height="5.4" fill="#FFCE00"/>
+          </svg>
+          <span>DE</span>
+        </button>
+        <button type="button" class="lang-btn" data-lang="zh" title="中文">
+          <svg class="flag-svg" viewBox="0 0 24 16" aria-hidden="true">
+            <rect width="24" height="16" rx="2" fill="#DE2910"/>
+            <polygon points="5,2.2 5.7,4.3 7.9,4.3 6.1,5.6 6.8,7.7 5,6.4 3.2,7.7 3.9,5.6 2.1,4.3 4.3,4.3" fill="#FFDE00"/>
+            <circle cx="9.6" cy="2.2" r="0.7" fill="#FFDE00"/>
+            <circle cx="11.1" cy="3.8" r="0.7" fill="#FFDE00"/>
+            <circle cx="11.1" cy="6.1" r="0.7" fill="#FFDE00"/>
+            <circle cx="9.6" cy="7.7" r="0.7" fill="#FFDE00"/>
+          </svg>
+          <span>ZH</span>
+        </button>
+        <button type="button" class="lang-btn" data-lang="fr" title="Français">
+          <svg class="flag-svg" viewBox="0 0 24 16" aria-hidden="true">
+            <rect width="8" height="16" fill="#002395"/>
+            <rect x="8" width="8" height="16" fill="#FFFFFF"/>
+            <rect x="16" width="8" height="16" fill="#ED2939"/>
+          </svg>
+          <span>FR</span>
+        </button>
+        <button type="button" class="lang-btn" data-lang="ru" title="Русский">
+          <svg class="flag-svg" viewBox="0 0 24 16" aria-hidden="true">
+            <rect width="24" height="5.4" fill="#FFFFFF"/>
+            <rect y="5.3" width="24" height="5.4" fill="#0039A6"/>
+            <rect y="10.6" width="24" height="5.4" fill="#D52B1E"/>
+          </svg>
+          <span>RU</span>
+        </button>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-accent" id="btn-random" data-i18n="btnRandom" data-i18n-title="btnRandomTitle" title="Generate a new random seed">🎲 Random Seed</button>
+        <button type="button" class="btn" id="btn-export-svg" data-i18n="btnExportSvg">Download SVG</button>
+        <button type="button" class="btn btn-primary" id="btn-export-png" data-i18n="btnExportPng">Download PNG</button>
+        <button type="button" class="btn btn-accent" id="btn-export-gif" data-i18n="btnExportGif">Download GIF 512×512</button>
+      </div>
     </div>
   </header>
 
@@ -29,8 +86,8 @@
       <!-- Всегда закреплённый вверху при сжатии окна и на мобильных блок с квадратным результатом редактора и блоком поддержки -->
       <div class="stage-sticky-top" id="stage-sticky-top">
         <!-- Подсказка сверху квадрата изображения, выровненная по левой стороне -->
-        <div class="stage-interaction-hint">
-          Кликните по элементу, чтобы передвинуть или увеличить (±20%) • Удерживайте элемент, чтобы передвинуть немного (±10%)
+        <div class="stage-interaction-hint" data-i18n="stageHint">
+          Click an element to move or scale (±20%) • Hold an element to drag slightly (±10%)
         </div>
         <div class="canvas-wrapper" id="svg-Mount">
           <!-- SVG генерируется и обновляется через app.js -->
@@ -38,8 +95,8 @@
         <!-- Заметный лаконичный зелёный блок поддержки сразу под картинкой -->
         <div class="support-card" id="support-card">
           <div class="support-header">
-            <span class="support-text">Понравился генератор?<br>Пожалуйста, поддержите!</span>
-            <a href="https://tips.tips/team/2638" target="_blank" rel="noopener noreferrer" class="btn support-btn" id="btn-support-link" title="Перейти на страницу поддержки">💖 Поддержать</a>
+            <span class="support-text" data-i18n-html="supportText">Liked the generator?<br>Please support us!</span>
+            <a href="https://tips.tips/team/2638" target="_blank" rel="noopener noreferrer" class="btn support-btn" id="btn-support-link" data-i18n="supportBtn" data-i18n-title="supportBtnTitle" title="Open support page">💖 Support</a>
           </div>
         </div>
       </div>
@@ -49,86 +106,86 @@
         <!-- Ползунок масштабирования выбранного кликом элемента (от -20% до +20%) -->
         <div class="element-scale-panel" id="element-scale-panel">
           <div class="scale-panel-header">
-            <span class="scale-target-label" id="lbl-scale-target">Кликните по элементу для масштаба (±20%) или зажмите для сдвига (±10%)</span>
+            <span class="scale-target-label" id="lbl-scale-target" data-i18n="scaleDefaultLabel">Click an element to scale (±20%) or hold to move (±10%)</span>
             <span class="scale-value-badge" id="lbl-scale-val">0%</span>
           </div>
           <div class="scale-slider-row">
             <span class="scale-bound-tag">-20%</span>
-            <input type="range" class="scale-range-input" id="rng-part-scale" min="-20" max="20" step="1" value="0" disabled aria-label="Масштаб выбранного элемента от -20 до +20 процентов" />
+            <input type="range" class="scale-range-input" id="rng-part-scale" min="-20" max="20" step="1" value="0" disabled aria-label="Element scale from -20 to +20 percent" />
             <span class="scale-bound-tag">+20%</span>
           </div>
           <div class="scale-panel-actions">
-            <button type="button" class="btn btn-sm" id="btn-reset-offsets" title="Сбросить все ручные сдвиги и масштаб элементов">Сброс правок</button>
-            <button type="button" class="btn btn-sm" id="btn-all-grain">Зерно: Вкл/Выкл всё</button>
+            <button type="button" class="btn btn-sm" id="btn-reset-offsets" data-i18n="btnResetOffsets" data-i18n-title="btnResetOffsetsTitle" title="Reset all manual shifts and element scaling">Reset Edits</button>
+            <button type="button" class="btn btn-sm" id="btn-all-grain" data-i18n="btnAllGrain">Grain: On/Off All</button>
           </div>
         </div>
 
         <!-- Анимация под изображением: шум, частички, моргание глаз, ушки, наклон головы (±7°), блик 45° по элементам, движение рук (5%) -->
         <div class="section-group stage-anim-panel" data-section-target="anim">
           <div class="section-header">
-            <span class="section-title">Анимация</span>
+            <span class="section-title" data-i18n="secAnim">Animation</span>
             <div class="section-actions">
               <label class="checkbox-toggle">
                 <input type="checkbox" id="chk-anim-enabled" checked />
-                <span>Вкл. анимацию</span>
+                <span data-i18n="chkAnimEnabled">Enable animation</span>
               </label>
-              <button type="button" class="btn btn-accent btn-sm" id="btn-export-gif-stage">Скачать GIF 512×512</button>
-              <button type="button" class="lock-btn" data-lock-target="anim">🔓 В рандоме</button>
+              <button type="button" class="btn btn-accent btn-sm" id="btn-export-gif-stage" data-i18n="btnExportGif">Download GIF 512×512</button>
+              <button type="button" class="lock-btn" data-lock-target="anim">🔓 Random</button>
             </div>
           </div>
           <div class="color-modes-bar">
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-noise" checked />
-              <span>Движется шум</span>
+              <span data-i18n="chkAnimNoise">Moving noise</span>
             </label>
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-particles" checked />
-              <span>Частички парят (±5%)</span>
+              <span data-i18n="chkAnimParticles">Floating particles (±5%)</span>
             </label>
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-blink" checked />
-              <span>Моргание глаз</span>
+              <span data-i18n="chkAnimBlink">Eye blinking</span>
             </label>
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-ears" checked />
-              <span>Ушки двигаются</span>
+              <span data-i18n="chkAnimEars">Moving ears</span>
             </label>
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-head" checked />
-              <span>Наклон головы (±7°)</span>
+              <span data-i18n="chkAnimHead">Head tilt (±7°)</span>
             </label>
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-glare" checked />
-              <span>Блик 45°</span>
+              <span data-i18n="chkAnimGlare">45° Glare</span>
             </label>
             <label class="checkbox-toggle mode-toggle-pill">
               <input type="checkbox" id="chk-anim-hands" checked />
-              <span>Ручки двигаются (5%)</span>
+              <span data-i18n="chkAnimHands">Moving hands (5%)</span>
             </label>
           </div>
 
           <!-- Отключение/включение блика 45° под конкретный элемент -->
           <div class="anim-subblock">
-            <span class="sub-label">Блик 45° на конкретных элементах (вкл/выкл):</span>
+            <span class="sub-label" data-i18n="subGlareTargets">45° Glare on specific elements (on/off):</span>
             <div class="glare-toggles" id="glare-controls">
-              <button type="button" class="glare-toggle is-active" data-glare-layer="glasses">✨ Очки</button>
-              <button type="button" class="glare-toggle is-active" data-glare-layer="earrings">✨ Серьги</button>
-              <button type="button" class="glare-toggle is-active" data-glare-layer="horns">✨ Рога</button>
-              <button type="button" class="glare-toggle is-active" data-glare-layer="hat">✨ Шапка</button>
-              <button type="button" class="glare-toggle" data-glare-layer="clothDetail">✨ Одежда</button>
-              <button type="button" class="glare-toggle is-active" data-glare-layer="particles">✨ Частицы</button>
+              <button type="button" class="glare-toggle is-active" data-glare-layer="glasses" data-i18n="glareGlasses">✨ Glasses</button>
+              <button type="button" class="glare-toggle is-active" data-glare-layer="earrings" data-i18n="glareEarrings">✨ Earrings</button>
+              <button type="button" class="glare-toggle is-active" data-glare-layer="horns" data-i18n="glareHorns">✨ Horns</button>
+              <button type="button" class="glare-toggle is-active" data-glare-layer="hat" data-i18n="glareHat">✨ Hat</button>
+              <button type="button" class="glare-toggle" data-glare-layer="clothDetail" data-i18n="glareCloth">✨ Outfit</button>
+              <button type="button" class="glare-toggle is-active" data-glare-layer="particles" data-i18n="glareParticles">✨ Particles</button>
             </div>
           </div>
 
           <!-- Пресеты анимации наклона головы (±7° от севера 0°) -->
           <div class="anim-subblock">
-            <span class="sub-label">Пресеты качания головы (±7° от 0° на севере, 8):</span>
+            <span class="sub-label" data-i18n="subHeadAnim">Head sway presets (±7° from 0° north, 8):</span>
             <div class="options-grid" id="opt-head-anim"></div>
           </div>
 
           <!-- Пресеты движения рук на 5% -->
           <div class="anim-subblock">
-            <span class="sub-label">Пресеты движения рук (10):</span>
+            <span class="sub-label" data-i18n="subHandAnim">Hand motion presets (10):</span>
             <div class="options-grid" id="opt-hand-anim"></div>
           </div>
         </div>
@@ -139,33 +196,33 @@
     <section class="controls-card">
       <!-- Панель сида (Seed): ввод, случайная генерация, кнопка назад, применение и копирование -->
       <div class="seed-bar">
-        <label class="seed-label" for="inp-seed">Сид:</label>
-        <input type="text" class="seed-input" id="inp-seed" value="ARGON-01" spellcheck="false" placeholder="Введите сид..." aria-label="Сид генерации Аргонёнка" />
-        <button type="button" class="btn btn-sm btn-accent" id="btn-new-seed" title="Сгенерировать случайный вариант">🎲 Случайный</button>
-        <button type="button" class="btn btn-sm" id="btn-prev-seed" title="Вернуть предыдущий сид" disabled>← Назад</button>
-        <button type="button" class="btn btn-sm btn-primary" id="btn-apply-seed" title="Сгенерировать Аргонёнка по указанному сиду">Применить</button>
-        <button type="button" class="btn btn-sm" id="btn-copy-seed" title="Скопировать текущий сид">Копировать</button>
+        <label class="seed-label" for="inp-seed" data-i18n="seedLabel">Seed:</label>
+        <input type="text" class="seed-input" id="inp-seed" value="ARGON-01" spellcheck="false" data-i18n-placeholder="seedPlaceholder" placeholder="Enter seed..." aria-label="Argonyata generation seed" />
+        <button type="button" class="btn btn-sm btn-accent" id="btn-new-seed" data-i18n="btnNewSeed" data-i18n-title="btnNewSeedTitle" title="Generate random variant">🎲 Random</button>
+        <button type="button" class="btn btn-sm" id="btn-prev-seed" data-i18n="btnPrevSeed" data-i18n-title="btnPrevSeedTitle" title="Restore previous seed" disabled>← Back</button>
+        <button type="button" class="btn btn-sm btn-primary" id="btn-apply-seed" data-i18n="btnApplySeed" data-i18n-title="btnApplySeedTitle" title="Generate avatar from seed">Apply</button>
+        <button type="button" class="btn btn-sm" id="btn-copy-seed" data-i18n="btnCopySeed" data-i18n-title="btnCopySeedTitle" title="Copy current seed">Copy</button>
       </div>
 
       <div class="controls-top-bar">
-        <button type="button" class="btn btn-sm" id="btn-close-all-panel" title="Свернуть или развернуть все вкладки конструктора">Закрыть все вкладки</button>
-        <button type="button" class="btn btn-sm" id="btn-color-lock-all" title="Зафиксировать или снять фиксацию всех цветов">🎨 Фикс цвета: Все</button>
-        <button type="button" class="btn btn-sm" id="btn-lock-all" title="Закрыть или открыть все замки от рандома">🔒 Замки: Закрыть все</button>
+        <button type="button" class="btn btn-sm" id="btn-close-all-panel" data-i18n-title="btnCloseAllTitle" title="Collapse or expand all constructor tabs">Close all tabs</button>
+        <button type="button" class="btn btn-sm" id="btn-color-lock-all" data-i18n-title="btnColorLockAllTitle" title="Lock or unlock all colors">🎨 Lock colors: All</button>
+        <button type="button" class="btn btn-sm" id="btn-lock-all" data-i18n-title="btnLockAllTitle" title="Lock or unlock all categories from random">🔒 Locks: Lock all</button>
       </div>
 
       <!-- Режимы цвета: Контрастность и Три цвета в отдельном блоке -->
       <div class="section-group" data-section-target="color-modes">
         <div class="section-header">
-          <span class="section-title">Режимы цвета (Контрастность и 3 цвета)</span>
+          <span class="section-title" data-i18n="secColorModes">Color Modes (Contrast & 3 Colors)</span>
         </div>
         <div class="color-modes-bar">
-          <label class="checkbox-toggle mode-toggle-pill" title="Политика контрастности верхлежащего элемента: если волосы красные — фон не может быть красным; если бабочка красная — тело под ней не может быть красным или оранжевым">
+          <label class="checkbox-toggle mode-toggle-pill" data-i18n-title="chkContrastTitle" title="Upper element contrast policy: prevents overlapping layers from sharing conflicting colors">
             <input type="checkbox" id="chk-contrast-mode" />
-            <span>Контрастность</span>
+            <span data-i18n="chkContrast">Contrast</span>
           </label>
-          <label class="checkbox-toggle mode-toggle-pill" title="Использовать только 3 цвета для всех элементов и фона">
+          <label class="checkbox-toggle mode-toggle-pill" data-i18n-title="chkThreeColorsTitle" title="Use only 3 harmonious colors for all elements and background">
             <input type="checkbox" id="chk-three-colors-mode" />
-            <span>Три цвета</span>
+            <span data-i18n="chkThreeColors">Three Colors</span>
           </label>
         </div>
       </div>
@@ -173,8 +230,8 @@
       <!-- Выбор цветовой палитры (20 пресетов) -->
       <div class="section-group" data-section-target="palette">
         <div class="section-header">
-          <span class="section-title">Цветовые палитры (20)</span>
-          <button type="button" class="lock-btn" data-lock-target="palette">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secPalette">Color Palettes (20)</span>
+          <button type="button" class="lock-btn" data-lock-target="palette">🔓 Random</button>
         </div>
         <div class="options-grid" id="opt-palette"></div>
       </div>
@@ -182,76 +239,76 @@
       <!-- Сетчатый градиент (Mesh Gradient) по отдельным частям тела в отдельном блоке -->
       <div class="section-group" data-section-target="gradient">
         <div class="section-header">
-          <span class="section-title">Сетчатый градиент по частям тела (Mesh Gradient)</span>
+          <span class="section-title" data-i18n="secGradient">Mesh Gradient by Body Parts</span>
           <div class="section-actions">
-            <label class="checkbox-toggle" title="Включить или отключить сетчатый градиент">
+            <label class="checkbox-toggle" data-i18n-title="chkGradientTitle" title="Enable or disable mesh gradient">
               <input type="checkbox" id="chk-gradient-mode" checked />
-              <span>Градиент</span>
+              <span data-i18n="chkGradient">Gradient</span>
             </label>
-            <button type="button" class="btn btn-sm" id="btn-all-mesh" title="Включить или выключить градиент на всех частях тела">Вкл/Выкл всё</button>
-            <button type="button" class="btn btn-accent btn-sm" id="btn-reroll-mesh" title="Сгенерировать случайные узлы и распределение градиента по деталям">Рандом градиента</button>
-            <button type="button" class="lock-btn" data-lock-target="gradient">🔓 В рандоме</button>
+            <button type="button" class="btn btn-sm" id="btn-all-mesh" data-i18n="btnAllMesh" data-i18n-title="btnAllMeshTitle" title="Toggle gradient on all body parts">On/Off All</button>
+            <button type="button" class="btn btn-accent btn-sm" id="btn-reroll-mesh" data-i18n="btnRerollMesh" data-i18n-title="btnRerollMeshTitle" title="Randomize gradient nodes and parts">Random Gradient</button>
+            <button type="button" class="lock-btn" data-lock-target="gradient">🔓 Random</button>
           </div>
         </div>
         <div class="grain-toggles" id="mesh-controls">
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="bg">Фон</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="skin">Лицо</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="ears">Ушки</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="earrings">Серьги</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="bodyShape">Силуэт</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="clothDetail">Одежда</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hands">Кисти рук</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairShort">Волосы: Короткие</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairBack">Волосы: Зад</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairBangs">Чёлка</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairTop">Макушка</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="facialHair">Борода/Усы</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="horns">Рога</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hat">Шапка</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="particles">Частицы</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="eyes">Глаза</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="nose">Нос</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="mouth">Рот</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="acc">Аксессуары</button>
-          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="glasses">Очки</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="bg" data-i18n="layerBg">Background</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="skin" data-i18n="layerSkin">Face</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="ears" data-i18n="layerEars">Ears</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="earrings" data-i18n="layerEarrings">Earrings</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="bodyShape" data-i18n="layerBody">Body</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="clothDetail" data-i18n="layerCloth">Outfit</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hands" data-i18n="layerHands">Hands</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairShort" data-i18n="layerHairShort">Hair: Short</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairBack" data-i18n="layerHairBack">Hair: Back</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairBangs" data-i18n="layerHairBangs">Bangs</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hairTop" data-i18n="layerHairTop">Crown</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="facialHair" data-i18n="layerFacialHair">Beard/Mustache</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="horns" data-i18n="layerHorns">Horns</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="hat" data-i18n="layerHat">Hat</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="particles" data-i18n="layerParticles">Particles</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="eyes" data-i18n="layerEyes">Eyes</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="nose" data-i18n="layerNose">Nose</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="mouth" data-i18n="layerMouth">Mouth</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="acc" data-i18n="layerAcc">Accessories</button>
+          <button type="button" class="grain-toggle mesh-toggle is-active" data-mesh-layer="glasses" data-i18n="layerGlasses">Glasses</button>
         </div>
       </div>
 
       <!-- Яркий шум (4 режима) + Геометрический паттерн вычитания (16 режимов) -->
       <div class="section-group" data-section-target="noise">
         <div class="section-header">
-          <span class="section-title">Яркое зерно шума (4) и гео-вычитание (16)</span>
+          <span class="section-title" data-i18n="secNoise">Vivid Noise Grain (4) & Geo-Cutouts (16)</span>
           <div class="section-actions">
-            <button type="button" class="btn btn-accent btn-sm" id="btn-reroll-noise">Рандом шума по деталям</button>
-            <button type="button" class="lock-btn" data-lock-target="noise">🔓 В рандоме</button>
+            <button type="button" class="btn btn-accent btn-sm" id="btn-reroll-noise" data-i18n="btnRerollNoise">Randomize Noise by Parts</button>
+            <button type="button" class="lock-btn" data-lock-target="noise">🔓 Random</button>
           </div>
         </div>
         <div class="options-grid" id="opt-noise-mode"></div>
         <div class="options-grid" id="opt-geo-cutout"></div>
         <div class="grain-toggles" id="grain-controls">
-          <button type="button" class="grain-toggle is-active" data-layer="bg">Фон</button>
-          <button type="button" class="grain-toggle is-active" data-layer="skin">Лицо</button>
-          <button type="button" class="grain-toggle is-active" data-layer="ears">Ушки</button>
-          <button type="button" class="grain-toggle is-active" data-layer="earrings">Серьги</button>
-          <button type="button" class="grain-toggle is-active" data-layer="bodyShape">Силуэт</button>
-          <button type="button" class="grain-toggle is-active" data-layer="clothDetail">Одежда</button>
-          <button type="button" class="grain-toggle is-active" data-layer="hands">Кисти рук</button>
-          <button type="button" class="grain-toggle is-active" data-layer="hairShort">Волосы: Короткие</button>
-          <button type="button" class="grain-toggle is-active" data-layer="hairBack">Волосы: Зад</button>
-          <button type="button" class="grain-toggle is-active" data-layer="hairBangs">Чёлка</button>
-          <button type="button" class="grain-toggle is-active" data-layer="hairTop">Макушка</button>
-          <button type="button" class="grain-toggle is-active" data-layer="facialHair">Борода/Усы</button>
-          <button type="button" class="grain-toggle is-active" data-layer="horns">Рога</button>
-          <button type="button" class="grain-toggle is-active" data-layer="hat">Шапка/Очки</button>
-          <button type="button" class="grain-toggle is-active" data-layer="particles">Частицы</button>
+          <button type="button" class="grain-toggle is-active" data-layer="bg" data-i18n="layerBg">Background</button>
+          <button type="button" class="grain-toggle is-active" data-layer="skin" data-i18n="layerSkin">Face</button>
+          <button type="button" class="grain-toggle is-active" data-layer="ears" data-i18n="layerEars">Ears</button>
+          <button type="button" class="grain-toggle is-active" data-layer="earrings" data-i18n="layerEarrings">Earrings</button>
+          <button type="button" class="grain-toggle is-active" data-layer="bodyShape" data-i18n="layerBody">Body</button>
+          <button type="button" class="grain-toggle is-active" data-layer="clothDetail" data-i18n="layerCloth">Outfit</button>
+          <button type="button" class="grain-toggle is-active" data-layer="hands" data-i18n="layerHands">Hands</button>
+          <button type="button" class="grain-toggle is-active" data-layer="hairShort" data-i18n="layerHairShort">Hair: Short</button>
+          <button type="button" class="grain-toggle is-active" data-layer="hairBack" data-i18n="layerHairBack">Hair: Back</button>
+          <button type="button" class="grain-toggle is-active" data-layer="hairBangs" data-i18n="layerHairBangs">Bangs</button>
+          <button type="button" class="grain-toggle is-active" data-layer="hairTop" data-i18n="layerHairTop">Crown</button>
+          <button type="button" class="grain-toggle is-active" data-layer="facialHair" data-i18n="layerFacialHair">Beard/Mustache</button>
+          <button type="button" class="grain-toggle is-active" data-layer="horns" data-i18n="layerHorns">Horns</button>
+          <button type="button" class="grain-toggle is-active" data-layer="hat" data-i18n="layerHatGlasses">Hat/Glasses</button>
+          <button type="button" class="grain-toggle is-active" data-layer="particles" data-i18n="layerParticles">Particles</button>
         </div>
       </div>
 
       <!-- Фон: Спектральные и Mesh Gradients + свой цвет -->
       <div class="section-group" data-section-target="bg">
         <div class="section-header">
-          <span class="section-title">Задний план и градиентная аура (22)</span>
-          <button type="button" class="lock-btn" data-lock-target="bg">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secBg">Background & Gradient Aura (22)</span>
+          <button type="button" class="lock-btn" data-lock-target="bg">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="bg"></div>
         <div class="options-grid" id="opt-bg"></div>
@@ -260,15 +317,15 @@
       <!-- Форма головы / овал лица -->
       <div class="section-group" data-section-target="face">
         <div class="section-header">
-          <span class="section-title">Овал лица и пухлые щёчки (22)</span>
+          <span class="section-title" data-i18n="secFace">Face Shape & Chubby Cheeks (22)</span>
           <div class="section-actions">
-            <button type="button" class="btn btn-accent btn-sm" id="btn-face-top-boost" title="Увеличить верх головы на N процентов для закрытия зазоров под прической или шапкой">Увеличить верх: +0%</button>
-            <button type="button" class="lock-btn" data-lock-target="face">🔓 В рандоме</button>
+            <button type="button" class="btn btn-accent btn-sm" id="btn-face-top-boost" data-i18n-title="btnFaceBoostTitle" title="Boost upper head height to close gaps under hair or hats">Boost top: +0%</button>
+            <button type="button" class="lock-btn" data-lock-target="face">🔓 Random</button>
           </div>
         </div>
         <div class="face-top-boost-bar">
-          <span class="scale-target-label">Увеличить верх головы (закрытие дырок):</span>
-          <input type="range" class="scale-range-input" id="rng-face-top-boost" min="0" max="50" step="5" value="0" aria-label="Увеличить верх головы в процентах" />
+          <span class="scale-target-label" data-i18n="lblFaceBoost">Boost upper head (close gaps):</span>
+          <input type="range" class="scale-range-input" id="rng-face-top-boost" min="0" max="50" step="5" value="0" aria-label="Boost upper head in percent" />
           <span class="scale-value-badge" id="lbl-face-top-boost">+0%</span>
         </div>
         <div class="element-color-bar" data-color-target="skin"></div>
@@ -278,8 +335,8 @@
       <!-- Формы ушек -->
       <div class="section-group" data-section-target="ears">
         <div class="section-header">
-          <span class="section-title">Форма ушек (16)</span>
-          <button type="button" class="lock-btn" data-lock-target="ears">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secEars">Ear Shapes (16)</span>
+          <button type="button" class="lock-btn" data-lock-target="ears">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="ears"></div>
         <div class="options-grid" id="opt-ears"></div>
@@ -288,8 +345,8 @@
       <!-- Серьги отдельно (15 видов) -->
       <div class="section-group" data-section-target="earrings">
         <div class="section-header">
-          <span class="section-title">Серьги (15)</span>
-          <button type="button" class="lock-btn" data-lock-target="earrings">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secEarrings">Earrings (15)</span>
+          <button type="button" class="lock-btn" data-lock-target="earrings">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="earrings"></div>
         <div class="options-grid" id="opt-earrings"></div>
@@ -298,8 +355,8 @@
       <!-- Глаза, Нос, Рот и Борода/Усы раздельно с настройкой цвета каждого элемента -->
       <div class="section-group" data-section-target="eyes">
         <div class="section-header">
-          <span class="section-title">Геометрия глаз (61)</span>
-          <button type="button" class="lock-btn" data-lock-target="eyes">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secEyes">Eye Geometry (61)</span>
+          <button type="button" class="lock-btn" data-lock-target="eyes">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="eyes"></div>
         <div class="options-grid" id="opt-eyes"></div>
@@ -307,8 +364,8 @@
 
       <div class="section-group" data-section-target="nose">
         <div class="section-header">
-          <span class="section-title">Минималистичный нос (15)</span>
-          <button type="button" class="lock-btn" data-lock-target="nose">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secNose">Minimalist Nose (15)</span>
+          <button type="button" class="lock-btn" data-lock-target="nose">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="nose"></div>
         <div class="options-grid" id="opt-nose"></div>
@@ -316,8 +373,8 @@
 
       <div class="section-group" data-section-target="mouth">
         <div class="section-header">
-          <span class="section-title">Геометрия рта и эмоция (15)</span>
-          <button type="button" class="lock-btn" data-lock-target="mouth">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secMouth">Mouth Geometry & Emotion (15)</span>
+          <button type="button" class="lock-btn" data-lock-target="mouth">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="mouth"></div>
         <div class="options-grid" id="opt-mouth"></div>
@@ -325,8 +382,8 @@
 
       <div class="section-group" data-section-target="facialHair">
         <div class="section-header">
-          <span class="section-title">Бороды и усы (30)</span>
-          <button type="button" class="lock-btn" data-lock-target="facialHair">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secFacialHair">Beards & Mustaches (30)</span>
+          <button type="button" class="lock-btn" data-lock-target="facialHair">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="facialHair"></div>
         <div class="options-grid" id="opt-facial-hair"></div>
@@ -335,10 +392,10 @@
       <!-- Короткие мужские стрижки от висков наверх/набок -->
       <div class="section-group" data-section-target="hairShort">
         <div class="section-header">
-          <span class="section-title">Прическа: Короткая (50)</span>
+          <span class="section-title" data-i18n="secHairShort">Hairstyle: Short (50)</span>
           <div class="section-actions">
-            <button type="button" class="btn btn-sm" id="btn-sync-hair">Синхр. цвет волос</button>
-            <button type="button" class="lock-btn" data-lock-target="hairShort">🔓 В рандоме</button>
+            <button type="button" class="btn btn-sm" id="btn-sync-hair" data-i18n="btnSyncHair">Sync hair color</button>
+            <button type="button" class="lock-btn" data-lock-target="hairShort">🔓 Random</button>
           </div>
         </div>
         <div class="element-color-bar" data-color-target="hairShort"></div>
@@ -348,8 +405,8 @@
       <!-- Прическа: разделена на Зад, Чёлку и Верх, каждый слой со своим цветом -->
       <div class="section-group" data-section-target="hairBack">
         <div class="section-header">
-          <span class="section-title">Прическа: Задний силуэт (50)</span>
-          <button type="button" class="lock-btn" data-lock-target="hairBack">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secHairBack">Hairstyle: Back Silhouette (50)</span>
+          <button type="button" class="lock-btn" data-lock-target="hairBack">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="hairBack"></div>
         <div class="options-grid" id="opt-hair-back"></div>
@@ -357,8 +414,8 @@
 
       <div class="section-group" data-section-target="hairBangs">
         <div class="section-header">
-          <span class="section-title">Прическа: Чёлка (50)</span>
-          <button type="button" class="lock-btn" data-lock-target="hairBangs">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secHairBangs">Hairstyle: Bangs (50)</span>
+          <button type="button" class="lock-btn" data-lock-target="hairBangs">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="hairBangs"></div>
         <div class="options-grid" id="opt-hair-bangs"></div>
@@ -366,8 +423,8 @@
 
       <div class="section-group" data-section-target="hairTop">
         <div class="section-header">
-          <span class="section-title">Прическа: Верх (50)</span>
-          <button type="button" class="lock-btn" data-lock-target="hairTop">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secHairTop">Hairstyle: Top / Crown (50)</span>
+          <button type="button" class="lock-btn" data-lock-target="hairTop">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="hairTop"></div>
         <div class="options-grid" id="opt-hair-top"></div>
@@ -376,8 +433,8 @@
       <!-- Силуэт тела и элементы одежды раздельно -->
       <div class="section-group" data-section-target="bodyShape">
         <div class="section-header">
-          <span class="section-title">Силуэт тела (65)</span>
-          <button type="button" class="lock-btn" data-lock-target="bodyShape">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secBodyShape">Body Silhouette (65)</span>
+          <button type="button" class="lock-btn" data-lock-target="bodyShape">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="bodyShape"></div>
         <div class="options-grid" id="opt-body"></div>
@@ -385,8 +442,8 @@
 
       <div class="section-group" data-section-target="clothDetail">
         <div class="section-header">
-          <span class="section-title">Элементы одежды на теле (50)</span>
-          <button type="button" class="lock-btn" data-lock-target="clothDetail">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secClothDetail">Clothing Details (50)</span>
+          <button type="button" class="lock-btn" data-lock-target="clothDetail">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="clothDetail"></div>
         <div class="element-color-bar" data-color-target="clothPocket"></div>
@@ -396,25 +453,25 @@
       <!-- Парящие кисти рук (не соединены с телом, каждая рука настраивается отдельно) -->
       <div class="section-group" data-section-target="hands" id="section-hands">
         <div class="section-header">
-          <span class="section-title">Кисти рук (30)</span>
+          <span class="section-title" data-i18n="secHands">Floating Hands (30)</span>
           <div class="section-actions">
             <label class="checkbox-toggle" for="chk-hands-enabled">
               <input type="checkbox" id="chk-hands-enabled" checked />
-              <span>Включить руки</span>
+              <span data-i18n="chkHandsEnabled">Enable hands</span>
             </label>
-            <button type="button" class="btn btn-sm" id="btn-sync-hands">В цвет кожи</button>
-            <button type="button" class="btn btn-sm" id="btn-reroll-hands">Случайное смещение</button>
-            <button type="button" class="lock-btn" data-lock-target="hands">🔓 В рандоме</button>
+            <button type="button" class="btn btn-sm" id="btn-sync-hands" data-i18n="btnSyncHands">Match skin color</button>
+            <button type="button" class="btn btn-sm" id="btn-reroll-hands" data-i18n="btnRerollHands">Random offset</button>
+            <button type="button" class="lock-btn" data-lock-target="hands">🔓 Random</button>
           </div>
         </div>
         <div class="element-color-bar" data-color-target="hands"></div>
         <div class="hands-poses-split" id="hands-poses-wrap">
           <div class="hand-pose-column">
-            <span class="sub-label">Левая кисть (30)</span>
+            <span class="sub-label" data-i18n="subHandLeft">Left Hand (30)</span>
             <div class="options-grid" id="opt-hand-left"></div>
           </div>
           <div class="hand-pose-column">
-            <span class="sub-label">Правая кисть (30, зеркально)</span>
+            <span class="sub-label" data-i18n="subHandRight">Right Hand (30, mirrored)</span>
             <div class="options-grid" id="opt-hand-right"></div>
           </div>
         </div>
@@ -423,8 +480,8 @@
       <!-- Очки, рога, головные уборы, аксессуары и частицы -->
       <div class="section-group" data-section-target="glasses">
         <div class="section-header">
-          <span class="section-title">Очки и монокли (19)</span>
-          <button type="button" class="lock-btn" data-lock-target="glasses">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secGlasses">Glasses & Monocles (19)</span>
+          <button type="button" class="lock-btn" data-lock-target="glasses">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="glasses"></div>
         <div class="options-grid" id="opt-glasses"></div>
@@ -432,8 +489,8 @@
 
       <div class="section-group" data-section-target="horns">
         <div class="section-header">
-          <span class="section-title">Рога и антенны (15)</span>
-          <button type="button" class="lock-btn" data-lock-target="horns">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secHorns">Horns & Antennas (15)</span>
+          <button type="button" class="lock-btn" data-lock-target="horns">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="horns"></div>
         <div class="options-grid" id="opt-horns"></div>
@@ -441,8 +498,8 @@
 
       <div class="section-group" data-section-target="hat">
         <div class="section-header">
-          <span class="section-title">Головной убор и адаптивные наушники (54)</span>
-          <button type="button" class="lock-btn" data-lock-target="hat">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secHat">Headwear & Adaptive Headphones (54)</span>
+          <button type="button" class="lock-btn" data-lock-target="hat">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="hat"></div>
         <div class="options-grid" id="opt-hat"></div>
@@ -450,8 +507,8 @@
 
       <div class="section-group" data-section-target="acc">
         <div class="section-header">
-          <span class="section-title">Аксессуары лица и тканевая маска (15)</span>
-          <button type="button" class="lock-btn" data-lock-target="acc">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secAcc">Face Accessories & Mask (15)</span>
+          <button type="button" class="lock-btn" data-lock-target="acc">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="acc"></div>
         <div class="options-grid" id="opt-acc"></div>
@@ -459,8 +516,8 @@
 
       <div class="section-group" data-section-target="particles">
         <div class="section-header">
-          <span class="section-title">Частицы и аура вокруг (50)</span>
-          <button type="button" class="lock-btn" data-lock-target="particles">🔓 В рандоме</button>
+          <span class="section-title" data-i18n="secParticles">Particles & Surrounding Aura (50)</span>
+          <button type="button" class="lock-btn" data-lock-target="particles">🔓 Random</button>
         </div>
         <div class="element-color-bar" data-color-target="particles"></div>
         <div class="options-grid" id="opt-particles"></div>
@@ -469,21 +526,21 @@
   </main>
 
   <!-- Плавающая кнопка «Стрелка наверх» -->
-  <button type="button" class="scroll-top-btn" id="btn-scroll-top" title="Прокрутить наверх" aria-label="Наверх">↑</button>
+  <button type="button" class="scroll-top-btn" id="btn-scroll-top" data-i18n-title="btnScrollTopTitle" title="Scroll to top" aria-label="Scroll to top">↑</button>
 
   <!-- Модальное окно сборки файла и поддержки перед автоматическим скачиванием SVG и GIF -->
   <div class="download-modal-backdrop" id="download-support-modal" aria-hidden="true">
     <div class="download-modal-card" role="dialog" aria-labelledby="download-modal-title">
-      <div class="download-modal-badge" id="lbl-download-format">Сборка GIF 512×512</div>
-      <h2 class="download-modal-title" id="download-modal-title">Ваша гиф формируется!</h2>
-      <p class="download-modal-subtitle" id="download-modal-subtitle">Пока анимация собирается, пожалуйста, поддержите наш проект, если вам понравился Генератор Аргонят! 💖</p>
+      <div class="download-modal-badge" id="lbl-download-format">Building GIF 512×512</div>
+      <h2 class="download-modal-title" id="download-modal-title">Your GIF is being generated!</h2>
+      <p class="download-modal-subtitle" id="download-modal-subtitle">While the animation is being built, please support our project if you enjoyed Argonyata Generator! 💖</p>
       <div class="download-modal-action-row">
-        <a href="https://tips.tips/team/2638" target="_blank" rel="noopener noreferrer" class="btn support-btn download-modal-support-btn" id="btn-modal-support-link">💖 Поддержать автора</a>
+        <a href="https://tips.tips/team/2638" target="_blank" rel="noopener noreferrer" class="btn support-btn download-modal-support-btn" id="btn-modal-support-link" data-i18n="modalSupportBtn">💖 Support the Author</a>
       </div>
       <div class="download-countdown-wrap">
         <div class="download-countdown-header">
-          <span class="download-countdown-label" id="lbl-download-status-text">Сборка кадров и подготовка загрузки:</span>
-          <span class="download-countdown-sec" id="lbl-download-countdown">3 сек</span>
+          <span class="download-countdown-label" id="lbl-download-status-text">Building frames and preparing download:</span>
+          <span class="download-countdown-sec" id="lbl-download-countdown">3s</span>
         </div>
         <div class="download-countdown-track">
           <div class="download-countdown-fill" id="bar-download-countdown"></div>
@@ -492,6 +549,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20261031v9"></script>
+  <script src="app.js?v=20261031v10"></script>
 </body>
 </html>
